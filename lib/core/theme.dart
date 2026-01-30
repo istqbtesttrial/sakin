@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  static const Color primaryColor = Color(0xFF5D8358); // الأخضر الزيتوني
+  static const Color primaryColor = Color(0xFF5D8358); // Olive Green
   static const Color secondaryColor = Color(0xFF8BA688);
-  static const Color backgroundColor = Color(0xFFF8F9FA); // أبيض ناعم
+  static const Color backgroundColor = Color(0xFFF8F9FA); // Soft White
   static const Color surfaceColor = Colors.white;
 
   static ThemeData get lightTheme {

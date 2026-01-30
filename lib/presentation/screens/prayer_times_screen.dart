@@ -19,7 +19,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
   @override
   void initState() {
     super.initState();
-    // تحميل الموقع عند فتح الصفحة
+    // Load location when the page opens
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final locationService =
           Provider.of<LocationService>(context, listen: false);
@@ -27,7 +27,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
         locationService.getCurrentLocation();
       }
 
-      // تحميل الإعدادات
+      // Load current settings
       final settingsService =
           Provider.of<SettingsService>(context, listen: false);
       settingsService.loadSettings();
@@ -40,7 +40,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
     final locationService = Provider.of<LocationService>(context);
     final settingsService = Provider.of<SettingsService>(context);
 
-    // قائمة الصلوات (نستبعد sunrise لأنه ليس وقت صلاة)
+    // List of prayers (excluding sunrise)
     final prayers = [
       {
         'name': 'الفجر',
@@ -86,7 +86,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
       ),
       body: Column(
         children: [
-          // Header بلون أخضر
+          // Colored Header
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
@@ -99,7 +99,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
             ),
             child: Column(
               children: [
-                // معلومات الموقع
+                // Location information display
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -121,7 +121,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                   ],
                 ),
                 const SizedBox(height: 10),
-                // التاريخ الهجري واليوم
+                // Hijri date display
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -136,7 +136,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                   ],
                 ),
                 const SizedBox(height: 10),
-                // زر تحديث الموقع
+                // Update location button
                 ElevatedButton.icon(
                   onPressed: locationService.isLoading
                       ? null
@@ -171,7 +171,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
           ),
           const SizedBox(height: 20),
 
-          // قائمة الصلوات
+          // Prayer times list
           Expanded(
             child: prayerService.prayerTimes == null
                 ? const Center(child: CircularProgressIndicator())
@@ -186,7 +186,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                           prayerService.prayerTimes!.timeForPrayer(prayer);
                       final isNext = prayerService.nextPrayer == prayer;
 
-                      // حالة التفعيل
+                      // Notification enabled status
                       bool isEnabled = true;
                       switch (prayerKey) {
                         case 'fajr':
@@ -249,7 +249,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              // الوقت
+                              // Prayer time display
                               Text(
                                 time != null
                                     ? prayerService.getFormattedTime(time)
@@ -263,7 +263,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              // Switch لتفعيل/إيقاف
+                              // Notification toggle switch
                               Transform.scale(
                                 scale: 0.8,
                                 child: Switch(
@@ -272,7 +272,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                                   onChanged: (value) async {
                                     await settingsService.togglePrayer(
                                         prayerKey, value);
-                                    // إعادة جدولة المنبهات فوراً بعد التغيير
+                                    // Reschedule alarms immediately after change
                                     prayerService.scheduleNotifications(
                                         settingsService.settings);
                                   },

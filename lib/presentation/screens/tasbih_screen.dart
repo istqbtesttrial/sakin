@@ -12,16 +12,16 @@ class TasbihScreen extends StatefulWidget {
 class _TasbihScreenState extends State<TasbihScreen> {
   int _count = 0;
   int _round = 0;
-  final int _target = 33; // الهدف لكل جولة
+  final int _target = 33; // Round target
 
   void _increment() {
-    HapticFeedback.lightImpact(); // اهتزاز خفيف
+    HapticFeedback.lightImpact(); // Subtle vibration
     setState(() {
       _count++;
       if (_count > _target) {
         _count = 1;
         _round++;
-        HapticFeedback.mediumImpact(); // اهتزاز أقوى عند إكمال الدورة
+        HapticFeedback.mediumImpact(); // Stronger feedback on cycle completion
       }
     });
   }
@@ -48,7 +48,7 @@ class _TasbihScreenState extends State<TasbihScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              // تأكيد قبل التصفير
+              // Reset confirmation dialog
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
@@ -75,7 +75,7 @@ class _TasbihScreenState extends State<TasbihScreen> {
       ),
       body: Column(
         children: [
-          // البطاقة العلوية (المجموع الكلي)
+          // Summary Card (Total Rounds)
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
@@ -120,7 +120,7 @@ class _TasbihScreenState extends State<TasbihScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // دائرة التقدم
+                  // Circular Progress Indicator
                   Stack(
                     alignment: Alignment.center,
                     children: [
@@ -137,7 +137,7 @@ class _TasbihScreenState extends State<TasbihScreen> {
                         ),
                       ),
 
-                      // زر العداد الكبير
+                      // Main Counter Button
                       GestureDetector(
                         onTap: _increment,
                         child: Container(
@@ -181,7 +181,7 @@ class _TasbihScreenState extends State<TasbihScreen> {
 
                   const SizedBox(height: 40),
 
-                  // تعليمات
+                  // Interaction Instructions
                   const Text(
                     'اضغط في أي مكان داخل الدائرة للتسبيح',
                     style: TextStyle(

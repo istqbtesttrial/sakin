@@ -92,26 +92,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // استخدم AdhanProvider الجديد
+    // Use the new AdhanProvider
     final adhanProvider = Provider.of<AdhanProvider>(context);
     final hiveDb = Provider.of<HiveDatabase>(context);
     final l10n = AppLocalizations.of(context)!;
 
-    // الحصول على الأذان القادم
+    // Get the upcoming Adhan
     final nextAdhan = adhanProvider.nextAdhan;
     final allAdhans = adhanProvider.getAdhanData(DateTime.now());
 
-    // تحويل اسم الصلاة
+    // Map prayer name
     String prayerNameLocal = nextAdhan.title;
 
-    // تنسيق وقت الصلاة القادم
+    // Format upcoming prayer time string
     String nextTimeStr =
         DateFormat.jm(l10n.localeName).format(nextAdhan.startTime);
 
-    // حساب الوقت المتبقي
+    // Calculate remaining duration
     final remainingDuration = nextAdhan.startTime.difference(DateTime.now());
 
-    // تنسيق الوقت المتبقي
+    // Format remaining time string
     String remainingTimeStr = "";
     final hours = remainingDuration.inHours;
     final minutes = remainingDuration.inMinutes.remainder(60);
@@ -130,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return DateFormat.jm(l10n.localeName).format(t);
     }
 
-    // استخراج أوقات السنة
+    // Extract Sunnah times
     final midnightAdhan = allAdhans.firstWhere(
         (a) => a.type == adhanTypeMidnight,
         orElse: () => Adhan(
@@ -241,7 +241,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: 20),
 
-              // أوقات السنة (منتصف الليل والثلث الأخير)
+              // Sunnah times (Midnight and Last Third)
               if (midnightAdhan.type != -1)
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -285,7 +285,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-              // أزرار سريعة
+              // Quick action buttons
               Row(
                 children: [
                   Expanded(
@@ -458,7 +458,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-/// زر إجراء سريع
+/// Quick Action Button widget
 class _QuickActionButton extends StatelessWidget {
   final IconData icon;
   final String label;

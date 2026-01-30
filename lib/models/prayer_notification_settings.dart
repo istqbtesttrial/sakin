@@ -3,8 +3,8 @@ import 'package:hive/hive.dart';
 
 part 'prayer_notification_settings.g.dart';
 
-/// نموذج إعدادات التنبيهات لكل صلاة.
-/// يستخدم لإدارة تفعيل أو تعطيل التنبيهات لكل صلاة بشكل مستقل.
+/// Notification settings model for each prayer.
+/// Manages independent notification toggles for each prayer.
 @HiveType(typeId: 1)
 class PrayerNotificationSettings {
   @HiveField(0)
@@ -30,7 +30,7 @@ class PrayerNotificationSettings {
     this.ishaEnabled = true,
   });
 
-  /// التحقق من تفعيل تنبيه صلاة معينة.
+  /// Check if notification is enabled for a specific prayer.
   bool isPrayerEnabled(Prayer prayer) {
     switch (prayer) {
       case Prayer.fajr:
@@ -48,7 +48,7 @@ class PrayerNotificationSettings {
     }
   }
 
-  /// تحويل كائن الإعدادات إلى [Map] كدعم إضافي بجانب Hive.
+  /// Convert settings to [Map].
   Map<String, dynamic> toJson() {
     return {
       'fajr': fajrEnabled,
@@ -59,7 +59,7 @@ class PrayerNotificationSettings {
     };
   }
 
-  /// إنشاء كائن [PrayerNotificationSettings] من [Map].
+  /// Create from [Map].
   factory PrayerNotificationSettings.fromJson(Map<String, dynamic> json) {
     return PrayerNotificationSettings(
       fajrEnabled: json['fajr'] ?? true,
@@ -70,8 +70,7 @@ class PrayerNotificationSettings {
     );
   }
 
-  /// إنشاء نسخة جديدة من الإعدادات مع تعديل بعض الحقول.
-  /// يساعد في الحفاظ على الجمود (Immutability).
+  /// Create a new copy with modified fields to maintain immutability.
   PrayerNotificationSettings copyWith({
     bool? fajrEnabled,
     bool? dhuhrEnabled,

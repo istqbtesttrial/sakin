@@ -4,6 +4,7 @@ import 'package:adhan/adhan.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:flutter/foundation.dart';
 
 @pragma('vm:entry-point')
 void startCallback() {
@@ -88,7 +89,7 @@ class MyTaskHandler extends TaskHandler {
       );
     } catch (e) {
       // Log error to terminal to see what's wrong
-      print('❌ Background Update Error: $e');
+      debugPrint('❌ Background Update Error: $e');
       _updateGeneric('Sakin Service Running');
     }
   }

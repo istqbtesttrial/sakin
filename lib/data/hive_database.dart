@@ -7,9 +7,9 @@ class HiveDatabase with ChangeNotifier {
 
   List<Map<dynamic, dynamic>> _tasks = [];
 
-  // لتهيئة البيانات عند الفتح
+  // Initialize data storage on start
   Future<void> init() async {
-    // تهيئة Hive قبل فتح الصناديق
+    // Initialize Hive for the application
     await Hive.initFlutter();
     _tasksBox = await Hive.openBox('tasks');
     _habitsBox = await Hive.openBox('habits');
@@ -26,19 +26,19 @@ class HiveDatabase with ChangeNotifier {
 
   List<Map<dynamic, dynamic>> get tasks => _tasks;
 
-  // إضافة مهمة
+  // Add a new task
   Future<void> addTask(String title) async {
     await _tasksBox.add({"title": title, "isDone": false});
     _loadTasks();
   }
 
-  // حذف مهمة
+  // Delete an existing task
   Future<void> deleteTask(int key) async {
     await _tasksBox.delete(key);
     _loadTasks();
   }
 
-  // تبديل حالة المهمة
+  // Toggle task completion status
   Future<void> toggleTask(int key, bool currentVal) async {
     final item = _tasksBox.get(key);
     item['isDone'] = !currentVal;
@@ -46,7 +46,7 @@ class HiveDatabase with ChangeNotifier {
     _loadTasks();
   }
 
-  // العادات (الصلاة) - مفتاح اليوم + اسم الصلاة
+  // Habit status management (Prayer trackers)
   bool getHabitStatus(String prayerName, {DateTime? date}) {
     final d = date ?? DateTime.now();
     final dateStr = d.toString().split(' ')[0];
@@ -54,7 +54,7 @@ class HiveDatabase with ChangeNotifier {
     return _habitsBox.get(key, defaultValue: false);
   }
 
-  // الحصول على عدد الصلوات المكتملة في يوم معين
+  // Get count of completed prayers for a given date
   int getPrayersCountForDay(DateTime date) {
     final dateStr = date.toString().split(' ')[0];
     int count = 0;

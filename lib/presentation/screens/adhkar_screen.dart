@@ -147,7 +147,7 @@ class _AdhkarCardState extends State<_AdhkarCard> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // رقم الذكر والعدد
+              // Dhikr ID and counter text
               Row(
                 children: [
                   Container(
@@ -180,7 +180,7 @@ class _AdhkarCardState extends State<_AdhkarCard> {
                     ),
                   ),
                   const Spacer(),
-                  // العداد
+                  // Counter display
                   Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -202,7 +202,7 @@ class _AdhkarCardState extends State<_AdhkarCard> {
                 ],
               ),
               const SizedBox(height: 12),
-              // نص الذكر
+              // Dhikr Content Text
               Text(
                 widget.dhikr,
                 style: TextStyle(
@@ -214,7 +214,7 @@ class _AdhkarCardState extends State<_AdhkarCard> {
                 textAlign: TextAlign.right,
               ),
               const SizedBox(height: 8),
-              // الفضل
+              // Virtue / Significance
               Text(
                 widget.virtue,
                 style: TextStyle(

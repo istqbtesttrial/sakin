@@ -34,25 +34,25 @@ import 'package:sakin_app/providers/adhan_playback_provider.dart';
 import 'package:sakin_app/providers/adhan_provider.dart';
 import 'package:sakin_app/providers/adhan_notification_provider.dart';
 
-// مفتاح للتنقل العام
+// Global navigator key for navigation without context
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // تهيئة خدمة الخلفية
+  // Initialize foreground service
   initFlutterAndroidBackgroundService();
 
-  // 0. تهيئة intl locale للعربية
+  // 0. Initialize date formatting locale
   await initializeDateFormatting('ar', null);
   tz.initializeTimeZones();
 
-  // 1. تهيئة قاعدة البيانات (Ensure Hive is initialized first)
+  // 1. Initialize Database (Ensure Hive is initialized first)
   final hiveDb = HiveDatabase();
   await hiveDb.init();
 
-  // 2. طلب الأذونات الضرورية (مرة واحدة فقط)
-  // نستخدم Hive (Settings Box) للتحقق مما إذا طلبنا الأذونات من قبل
+  // 2. Request necessary permissions (Only once)
+  // Use Hive (Settings Box) to check if permissions were already requested
   var settingsBox = await Hive.openBox('settings');
   bool permissionsRequested =
       settingsBox.get('permissions_requested', defaultValue: false);
@@ -75,15 +75,15 @@ void main() async {
     debugPrint('Permissions already requested previously. Skipping.');
   }
 
-  // 3. تهيئة الخدمات (Restored)
+  // 3. Initialize Services
   await NotificationService.init();
-  await AndroidAlarmManager.initialize(); // تهيئة مدير المنبهات
+  await AndroidAlarmManager.initialize(); // Initialize Alarm Manager
 
-  // 5. تهيئة خدمة الموقع
+  // 5. Initialize Location Service
   final locationService = LocationService();
   await locationService.init();
 
-  // 7. إعداد callback لفتح صفحة الأذكار عند النقر على الإشعار
+  // 7. Setup callback to open Adhkar screen on notification tap
   NotificationService.onAdhkarTap = (payload) {
     navigatorKey.currentState?.push(
       MaterialPageRoute(builder: (_) => const AdhkarScreen()),
@@ -93,7 +93,7 @@ void main() async {
   runApp(SakinApp(hiveDb: hiveDb, locationService: locationService));
 }
 
-// دالة تهيئة الخدمة الخلفية
+// Initialize Foreground Service configuration
 void initFlutterAndroidBackgroundService() {
   FlutterForegroundTask.init(
     androidNotificationOptions: AndroidNotificationOptions(
@@ -209,7 +209,7 @@ class SakinApp extends StatelessWidget {
                       );
                     },
                   ),
-                  // Keep PrayerService for now if needed, or rely on refactor
+// Keep PrayerService for now if needed, or rely on refactor
                   ChangeNotifierProxyProvider<LocationService, PrayerService>(
                     create: (_) => PrayerService(),
                     update: (_, location, prayerService) {
@@ -292,7 +292,7 @@ class _MainLayoutState extends State<MainLayout> {
     const HomeScreen(),
     const HabitsScreen(),
     const PrayerTimesScreen(),
-    const SettingsScreen(), // الصفحة الجديدة
+    const SettingsScreen(), // Settings Page
   ];
 
   @override

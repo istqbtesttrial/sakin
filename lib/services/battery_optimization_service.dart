@@ -6,21 +6,21 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:android_intent_plus/flag.dart';
 
-/// خدمة للتعامل مع استثناء تحسين البطارية
-/// هذا ضروري لضمان استمرار عمل خدمة الأذان في الخلفية
+/// Service to handle battery optimization exemption
+/// Necessary to ensure background Adhan service reliability
 class BatteryOptimizationService {
   static const String _boxName = 'settings';
   static const String _promptShownKey = 'battery_prompt_shown';
 
-  /// التحقق مما إذا كان التطبيق مستثنى من تحسين البطارية
+  /// Check if the app is ignoring battery optimizations
   static Future<bool> isIgnoringBatteryOptimizations() async {
-    if (!Platform.isAndroid) return true; // iOS لا تحتاج هذا
+    if (!Platform.isAndroid) return true; // iOS doesn't need this
 
     final status = await Permission.ignoreBatteryOptimizations.status;
     return status.isGranted;
   }
 
-  /// التحقق مما إذا تم عرض الحوار من قبل
+  /// Check if the battery prompt was already shown
   static Future<bool> wasPromptShown() async {
     try {
       final box = await Hive.openBox(_boxName);
@@ -32,7 +32,7 @@ class BatteryOptimizationService {
     }
   }
 
-  /// تسجيل أن الحوار تم عرضه
+  /// Mark that the battery prompt has been shown
   static Future<void> markPromptAsShown() async {
     try {
       final box = await Hive.openBox(_boxName);
@@ -42,7 +42,7 @@ class BatteryOptimizationService {
     }
   }
 
-  /// الحصول على الشركة المصنعة للجهاز
+  /// Get device manufacturer
   static Future<String?> _getManufacturer() async {
     if (!Platform.isAndroid) return null;
     try {
@@ -55,7 +55,7 @@ class BatteryOptimizationService {
     }
   }
 
-  /// فتح إعدادات التشغيل التلقائي لشاومي
+  /// Open Xiaomi-specific auto-start settings
   static Future<void> _openAutoStartSettings() async {
     try {
       const intent = AndroidIntent(
@@ -69,7 +69,7 @@ class BatteryOptimizationService {
     }
   }
 
-  /// طلب استثناء التطبيق من تحسين البطارية
+  /// Request battery optimization exemption from system
   static Future<bool> requestIgnoreBatteryOptimizations() async {
     if (!Platform.isAndroid) return true;
 
@@ -77,12 +77,12 @@ class BatteryOptimizationService {
     return status.isGranted;
   }
 
-  /// فتح إعدادات البطارية مباشرة
+  /// Open battery settings directly
   static Future<void> openBatterySettings() async {
     await openAppSettings();
   }
 
-  /// إظهار حوار يشرح للمستخدم أهمية استثناء البطارية
+  /// Show dialog explaining battery optimization importance
   static Future<void> showBatteryOptimizationDialog(
       BuildContext context) async {
     if (!context.mounted) return;
@@ -177,14 +177,14 @@ class BatteryOptimizationService {
     );
   }
 
-  /// التحقق وإظهار الحوار إذا لزم الأمر (يُستدعى عند فتح التطبيق)
+  /// Check and prompt for optimization (called on app startup)
   static Future<void> checkAndPrompt(BuildContext context) async {
-    // 0. الانتظار قليلاً لضمان جاهزية الـ UI و Hive
+    // 0. Wait slightly for UI and Hive readiness
     await Future.delayed(const Duration(milliseconds: 1000));
 
     if (!context.mounted) return;
 
-    // 1. التحقق مما إذا كنا قد أظهرنا الحوار سابقاً
+    // 1. Check if prompt was shown previously
     final bool wasShown = await wasPromptShown();
     debugPrint('Battery Prompt Shown Before: $wasShown');
 
@@ -192,8 +192,8 @@ class BatteryOptimizationService {
       return;
     }
 
-    // 2. التحقق من حالة الإذن الحالية (الحقيقة من النظام)
-    // حتى لو لم يتم عرضه، إذا كان الاذن ممنوحاً فلا داعي للعرض
+    // 2. Check current status from system
+    // Even if not shown, skip if already granted
     final bool isIgnoring = await isIgnoringBatteryOptimizations();
 
     // 3. STRICT: Mark as shown IMMEDIATELY
@@ -204,7 +204,7 @@ class BatteryOptimizationService {
       return;
     }
 
-    // 4. إظهار الحوار
+    // 4. Show prompt dialog
     if (context.mounted) {
       await showBatteryOptimizationDialog(context);
     }

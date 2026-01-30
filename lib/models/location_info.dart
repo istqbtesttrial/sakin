@@ -2,24 +2,24 @@ import 'package:hive/hive.dart';
 
 part 'location_info.g.dart';
 
-/// أوضاع الموقع المدعومة.
+/// Supported location modes.
 @HiveType(typeId: 2)
 enum LocationMode {
-  /// الموقع محفوظ محلياً (لا يوجد إنترنت).
+  /// Location is cached locally.
   @HiveField(0)
   cached,
 
-  /// الموقع يتم جلبه مباشرة عبر GPS.
+  /// Location is fetched directly via GPS.
   @HiveField(1)
   live,
 
-  /// الموقع تم إدخاله يدوياً.
+  /// Location entered manually.
   @HiveField(2)
   manual,
 }
 
-/// نموذج معلومات الموقع.
-/// يستخدم لتخزين الإحداثيات والعنوان وحالة تحديث الموقع.
+/// Location information model.
+/// Stores coordinates, address, and update status.
 @HiveType(typeId: 3)
 class LocationInfo {
   @HiveField(0)
@@ -45,7 +45,7 @@ class LocationInfo {
     DateTime? lastUpdated,
   }) : lastUpdated = lastUpdated ?? DateTime.now();
 
-  /// إنشاء نسخة جديدة من معلومات الموقع مع إمكانية تعديل بعض الحلقول.
+  /// Create a new instance with optional field updates.
   LocationInfo copyWith({
     double? latitude,
     double? longitude,
@@ -62,7 +62,7 @@ class LocationInfo {
     );
   }
 
-  /// تحويل البيانات إلى [Map] للحفظ كخيار بديل.
+  /// Convert to [Map] for storage.
   Map<String, dynamic> toJson() {
     return {
       'latitude': latitude,
@@ -73,7 +73,7 @@ class LocationInfo {
     };
   }
 
-  /// إنشاء كائن [LocationInfo] من [Map].
+  /// Create from [Map].
   factory LocationInfo.fromJson(Map<String, dynamic> json) {
     return LocationInfo(
       latitude: json['latitude'],

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/prayer_notification_settings.dart';
 
-/// خدمة لإدارة إعدادات الإشعارات
+/// Service to manage notification settings
 class SettingsService with ChangeNotifier {
   PrayerNotificationSettings _settings = const PrayerNotificationSettings();
 
@@ -14,25 +14,25 @@ class SettingsService with ChangeNotifier {
   Locale _locale = const Locale('ar');
   Locale get locale => _locale;
 
-  /// تحميل الإعدادات من Hive
+  /// Load settings from Hive
   Future<void> loadSettings() async {
     try {
       final box = await Hive.openBox('settings');
 
-      // تحميل إشعارات الصلاة
+      // Load prayer notification settings
       final data = box.get('prayer_notifications');
       if (data != null) {
         _settings = PrayerNotificationSettings.fromJson(
             Map<String, dynamic>.from(data));
       }
 
-      // تحميل اللغة
+      // Load locale
       final langCode = box.get('language_code');
       if (langCode != null) {
         _locale = Locale(langCode);
       }
 
-      // تحميل تاريخ التثبيت
+      // Load installation date
       final installTimestamp = box.get('install_date');
       if (installTimestamp != null) {
         _installDate = DateTime.parse(installTimestamp);
@@ -43,11 +43,11 @@ class SettingsService with ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('خطأ في تحميل الإعدادات: $e');
+      debugPrint('Error loading settings: $e');
     }
   }
 
-  /// تغيير اللغة وحفظها
+  /// Change locale and persist it
   Future<void> setLocale(Locale newLocale) async {
     if (_locale == newLocale) return;
     _locale = newLocale;
@@ -57,22 +57,22 @@ class SettingsService with ChangeNotifier {
       final box = await Hive.openBox('settings');
       await box.put('language_code', newLocale.languageCode);
     } catch (e) {
-      debugPrint('خطأ في حفظ اللغة: $e');
+      debugPrint('Error saving language: $e');
     }
   }
 
-  /// حفظ الإعدادات في Hive
+  /// Save current settings to Hive
   Future<void> saveSettings() async {
     try {
       final box = await Hive.openBox('settings');
       await box.put('prayer_notifications', _settings.toJson());
       notifyListeners();
     } catch (e) {
-      debugPrint('خطأ في حفظ الإعدادات: $e');
+      debugPrint('Error saving settings: $e');
     }
   }
 
-  /// تحديث حالة صلاة معينة
+  /// Update the enabled state of a specific prayer
   Future<void> togglePrayer(String prayerName, bool value) async {
     _settings = _settings.copyWith(
       fajrEnabled: prayerName == 'fajr' ? value : null,

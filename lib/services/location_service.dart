@@ -13,17 +13,17 @@ class LocationService with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  // جلب الموقع الحالي (GPS)
+  // Fetch current location (GPS)
   Future<LocationInfo?> getCurrentLocation() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      // التحقق من الأذونات
+      // Check permissions
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        _errorMessage = 'خدمة الموقع غير مفعّلة';
+        _errorMessage = 'Location service is disabled';
         _isLoading = false;
         notifyListeners();
         return _loadCachedLocation();
@@ -33,7 +33,7 @@ class LocationService with ChangeNotifier {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          _errorMessage = 'تم رفض إذن الموقع';
+          _errorMessage = 'Location permission denied';
           _isLoading = false;
           notifyListeners();
           return _loadCachedLocation();
@@ -41,22 +41,21 @@ class LocationService with ChangeNotifier {
       }
 
       if (permission == LocationPermission.deniedForever) {
-        _errorMessage = 'إذن الموقع مرفوض بشكل نهائي';
+        _errorMessage = 'Location permission permanently denied';
         _isLoading = false;
         notifyListeners();
         return _loadCachedLocation();
       }
 
-      // جلب الموقع
-      // جلب الموقع
+      // Fetch position
       Position position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.high,
         ),
       );
 
-      // جلب اسم المدينة من الإحداثيات
-      String cityName = 'الموقع الحالي';
+      // Get city name from coordinates
+      String cityName = 'Current Location';
       try {
         final placemarks = await placemarkFromCoordinates(
           position.latitude,
@@ -66,10 +65,10 @@ class LocationService with ChangeNotifier {
           final placemark = placemarks.first;
           cityName = placemark.locality ??
               placemark.administrativeArea ??
-              'الموقع الحالي';
+              'Current Location';
         }
       } catch (e) {
-        debugPrint('خطأ في جلب اسم المدينة: $e');
+        debugPrint('Error fetching city name: $e');
       }
 
       _currentLocation = LocationInfo(
@@ -79,36 +78,36 @@ class LocationService with ChangeNotifier {
         mode: LocationMode.live,
       );
 
-      // حفظ الموقع في Hive
+      // Save location to Hive
       await _saveLocationToCache(_currentLocation!);
 
       _isLoading = false;
       notifyListeners();
       return _currentLocation;
     } catch (e) {
-      _errorMessage = 'خطأ في جلب الموقع: $e';
+      _errorMessage = 'Error fetching location: $e';
       _isLoading = false;
       notifyListeners();
       return _loadCachedLocation();
     }
   }
 
-  // حفظ الموقع في Hive
+  // Save location to Hive
   Future<void> _saveLocationToCache(LocationInfo location) async {
     final box = await Hive.openBox('settings');
     await box.put('cached_location', location.toJson());
   }
 
-  // تحميل الموقع المحفوظ
+  // Load cached location
   Future<LocationInfo?> _loadCachedLocation() async {
     try {
       final box = await Hive.openBox('settings');
       final cachedData = box.get('cached_location');
       if (cachedData != null) {
-        // تحويل Map بشكل صحيح
+        // Convert Map correctly
         final jsonData = Map<String, dynamic>.from(cachedData);
         _currentLocation = LocationInfo.fromJson(jsonData);
-        // تحديث الوضع إلى cached
+        // Update mode to cached
         _currentLocation = LocationInfo(
           latitude: _currentLocation!.latitude,
           longitude: _currentLocation!.longitude,
@@ -121,12 +120,12 @@ class LocationService with ChangeNotifier {
       }
       return null;
     } catch (e) {
-      debugPrint('خطأ في تحميل الموقع المحفوظ: $e');
+      debugPrint('Error loading cached location: $e');
       return null;
     }
   }
 
-  // تهيئة الخدمة (تحميل الموقع المحفوظ)
+  // Initialize service (load cached location)
   Future<void> init() async {
     await _loadCachedLocation();
   }

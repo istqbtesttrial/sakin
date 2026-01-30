@@ -53,7 +53,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // قسم اللغة
+            // Language Selection Section
             _buildSectionHeader(l10n.language),
             Container(
               decoration: BoxDecoration(
@@ -73,7 +73,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             const SizedBox(height: 30),
 
-            // قسم معلومات التطبيق
+            // App Information Section
             _buildSectionHeader(l10n.appVersion),
             Container(
               padding: const EdgeInsets.all(20),
@@ -111,7 +111,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             const SizedBox(height: 50),
 
-            // الدعاء (Footer)
+            // Supplication Footer
             Center(
               child: Column(
                 children: [

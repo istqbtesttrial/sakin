@@ -6,7 +6,7 @@ import 'package:adhan/adhan.dart';
 import 'package:intl/intl.dart' as intl;
 import 'adhan_player.dart';
 
-// Callback للتعامل مع النقر على الإشعارات
+// Callback to handle notification taps
 typedef NotificationTapCallback = void Function(String? payload);
 
 class NotificationService {
@@ -14,7 +14,7 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
   static final AdhanPlayer _adhanPlayer = AdhanPlayer();
 
-  // Callback يُستدعى عند النقر على إشعار الأذكار
+  // Callback invoked when an adhkar notification is tapped
   static NotificationTapCallback? onAdhkarTap;
 
   static Future<void> init() async {
@@ -30,7 +30,7 @@ class NotificationService {
       onDidReceiveNotificationResponse: _onNotificationTap,
     );
 
-    // إنشاء قناة الإشعارات للخدمة الأمامية
+    // Create the notification channel for the foreground service
     const AndroidNotificationChannel foregroundChannel =
         AndroidNotificationChannel(
       'sakin_foreground',
@@ -46,7 +46,7 @@ class NotificationService {
             AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(foregroundChannel);
 
-    // إنشاء قناة الإشعارات العادية
+    // Create the regular notification channel
     const AndroidNotificationChannel regularChannel =
         AndroidNotificationChannel(
       'sakin_channel',
@@ -60,7 +60,7 @@ class NotificationService {
             AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(regularChannel);
 
-    // إنشاء قناة خاصة بالأذان (صوت عالي) - UPDATED V5
+    // Create a special channel for Adhan (high priority with sound) - UPDATED V5
     const AndroidNotificationChannel adhanChannel = AndroidNotificationChannel(
       'sakin_adhan_v5', // Match the ID used in show()
       'Adhan Alarm Final', // Match the name
@@ -77,7 +77,7 @@ class NotificationService {
             AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(adhanChannel);
 
-    // إنشاء قناة خاصة بالأذكار
+    // Create a channel specifically for Adhkar
     const AndroidNotificationChannel adhkarChannel = AndroidNotificationChannel(
       'sakin_adhkar',
       'أذكار الصلاة',
@@ -93,10 +93,10 @@ class NotificationService {
         ?.createNotificationChannel(adhkarChannel);
   }
 
-  /// التعامل مع النقر على الإشعار
+  /// Handle notification interaction
   static void _onNotificationTap(NotificationResponse response) {
     debugPrint(
-        '📱 تم النقر على الإشعار: ${response.actionId} - ${response.payload}');
+        '📱 Notification tapped: ${response.actionId} - ${response.payload}');
 
     if (response.actionId == 'stop_adhan') {
       stopAdhan();
@@ -106,7 +106,7 @@ class NotificationService {
     }
   }
 
-  // إظهار إشعار فوري (للتجربة)
+  // Show an immediate notification (for testing)
   static Future<void> showNotification(String title, String body) async {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
@@ -130,7 +130,7 @@ class NotificationService {
     );
   }
 
-  // إظهار إشعار الصلاة مع تشغيل الأذان (Old Method)
+  // Show prayer notification while playing Adhan (Old Method)
   static Future<void> showPrayerNotificationWithAdhan(String prayerName) async {
     await _adhanPlayer.playAdhan();
 
@@ -161,10 +161,10 @@ class NotificationService {
     );
   }
 
-  // جدولة الأذان كمنبه (Alarm) - باستخدام AndroidAlarmManager
+  // Schedule Adhan as an alarm using AndroidAlarmManager
   static Future<void> scheduleAdhan(
       int id, String prayerName, DateTime prayerTime) async {
-    // استخدام AlarmManager لضمان التشغيل حتى في وضع الغفوة (Doze Mode)
+    // Use AlarmManager to ensure execution even in Doze Mode
     await AndroidAlarmManager.oneShotAt(
       prayerTime,
       id,
@@ -177,7 +177,7 @@ class NotificationService {
     );
   }
 
-  // 172. هذه الدالة تعمل في الخلفية (Background Isolate)
+  // This function runs in a background isolate
   // MOVED TO TOP LEVEL TO FIX ENTRY POINT ERROR
   /*
   @pragma('vm:entry-point')
@@ -187,13 +187,13 @@ class NotificationService {
   }
   */
 
-  // اختبار فوري (Sanity Check)
+  // Immediate test (Sanity Check)
   static Future<void> showImmediateNotification() async {
-    // نستخدم نفس الدالة لضمان تطابق السلوك
+    // Use the same function to ensure consistent behavior
     await adhanAlarmCallback(999, {'prayerName': 'تجربة فورية'});
   }
 
-  // إيقاف الأذان وإلغاء الإشعار
+  // Stop Adhan playback and cancel notifications
   static Future<void> stopAdhan() async {
     await _adhanPlayer.stopAdhan();
     await _notificationsPlugin.cancelAll();
@@ -264,10 +264,10 @@ Future<void> adhanAlarmCallback(int id, Map<String, dynamic> params) async {
     debugPrint('Wakelock error: $e');
   }
 
-  // 2. إظهار الإشعار الثابت مع زر الإيقاف
-  await NotificationService.init(); // التأكد من تهيئة القناة
+  // 2. Show fixed notification with stop button
+  await NotificationService.init(); // Ensure channel initialization
 
-  // إعدادات خاصة للأندرويد ليعامل الإشعار كمنبه
+  // Android-specific settings to treat notification as an alarm
   const AndroidNotificationDetails androidPlatformChannelSpecifics =
       AndroidNotificationDetails(
     'sakin_adhan_v5', // New Channel ID to refresh settings

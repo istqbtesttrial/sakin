@@ -16,12 +16,12 @@ class MonthlyHeatMap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // حساب عدد الأيام في الشهر
+    // Calculate number of days in the month
     final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
     final firstDayOfMonth = DateTime(month.year, month.month, 1);
     final firstWeekday = (firstDayOfMonth.weekday % 7); // 0 = Sunday
 
-    // اسم الشهر
+    // Month name display
     final monthName = DateFormat.MMMM(locale.languageCode).format(month);
 
     return Container(

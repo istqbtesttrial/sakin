@@ -18,7 +18,7 @@ class HabitsScreen extends StatelessWidget {
     final prayerService = Provider.of<PrayerService>(context);
     final settingsService = Provider.of<SettingsService>(context);
 
-    // قائمة الصلوات المتاحة للتتبع
+    // List of available prayers for tracking
     final prayers = [
       {
         'name': l10n.fajr,
@@ -63,7 +63,7 @@ class HabitsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         children: [
-          // بطاقة التتبع اليومية
+          // Daily tracking card
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -95,7 +95,7 @@ class HabitsScreen extends StatelessWidget {
                     final prayer = p['prayer'] as Prayer;
                     final isDone = db.getHabitStatus(key);
 
-                    // التحقق من الوقت
+                    // Check if prayer time has occurred
                     final prayerTime =
                         prayerService.prayerTimes?.timeForPrayer(prayer);
                     final isPastOrNow = prayerTime != null &&
@@ -169,7 +169,7 @@ class HabitsScreen extends StatelessWidget {
             ),
           ),
 
-          // عرض الخرائط الحرارية
+          // Display heatmaps for previous months
           ..._buildHeatMaps(settingsService, db),
           const SizedBox(height: 30),
         ],

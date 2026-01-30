@@ -25,7 +25,7 @@ class PrayerService with ChangeNotifier {
     final date = DateComponents.from(DateTime.now());
     _prayerTimes = PrayerTimes(_coordinates, date, params);
 
-    // حساب أوقات السنة (الsunnah)
+    // Calculate Sunnah times (Middle of the Night, Last Third)
     if (_prayerTimes != null) {
       _sunnahTimes = SunnahTimes(_prayerTimes!);
     }
@@ -33,20 +33,20 @@ class PrayerService with ChangeNotifier {
     notifyListeners();
   }
 
-  /// جدولة الإشعارات بناءً على الإعدادات الحالية
+  /// Schedule notifications based on the current settings
   Future<void> scheduleNotifications(
       PrayerNotificationSettings settings) async {
     if (_prayerTimes == null) return;
 
     debugPrint('⏳ 📅 Scheduling notifications...');
 
-    // قائمة بالصلوات لجدولتها
+    // List of prayers to be scheduled
     final currentPrayers = {
-      'الفجر': _prayerTimes!.fajr,
-      'الظهر': _prayerTimes!.dhuhr,
-      'العصر': _prayerTimes!.asr,
-      'المغرب': _prayerTimes!.maghrib,
-      'العشاء': _prayerTimes!.isha,
+      'Fajr': _prayerTimes!.fajr,
+      'Dhuhr': _prayerTimes!.dhuhr,
+      'Asr': _prayerTimes!.asr,
+      'Maghrib': _prayerTimes!.maghrib,
+      'Isha': _prayerTimes!.isha,
     };
 
     int alarmId = 0;
@@ -56,22 +56,22 @@ class PrayerService with ChangeNotifier {
       final prayerName = entry.key;
       final prayerTime = entry.value;
 
-      // تحقق من التفعيل
+      // Check if the specific prayer is enabled in settings
       bool isEnabled = false;
       switch (prayerName) {
-        case 'الفجر':
+        case 'Fajr':
           isEnabled = settings.fajrEnabled;
           break;
-        case 'الظهر':
+        case 'Dhuhr':
           isEnabled = settings.dhuhrEnabled;
           break;
-        case 'العصر':
+        case 'Asr':
           isEnabled = settings.asrEnabled;
           break;
-        case 'المغرب':
+        case 'Maghrib':
           isEnabled = settings.maghribEnabled;
           break;
-        case 'العشاء':
+        case 'Isha':
           isEnabled = settings.ishaEnabled;
           break;
       }
@@ -90,13 +90,13 @@ class PrayerService with ChangeNotifier {
 
   Prayer get nextPrayer => _prayerTimes?.nextPrayer() ?? Prayer.none;
 
-  // وقت منتصف الليل
+  // Middle of the night time
   DateTime? get middleOfTheNight => _sunnahTimes?.middleOfTheNight;
 
-  // الثلث الأخير من الليل
+  // Last third of the night time
   DateTime? get lastThirdOfTheNight => _sunnahTimes?.lastThirdOfTheNight;
 
-  // إرجاع الصلاة القادمة والوقت كبيانات خام
+  // Returns the next prayer's time as raw DateTime
   DateTime? getNextPrayerTime() {
     if (_prayerTimes == null) return null;
     final next = _prayerTimes!.nextPrayer();
@@ -104,7 +104,7 @@ class PrayerService with ChangeNotifier {
     return _prayerTimes!.timeForPrayer(next);
   }
 
-  // دالة لجلب الوقت المتبقي كـ Duration
+  // Returns time remaining until next prayer as a Duration
   Duration? getTimeRemainingDuration() {
     if (_prayerTimes == null) return null;
 
@@ -116,8 +116,8 @@ class PrayerService with ChangeNotifier {
     return nextTime.difference(now);
   }
 
-  // يمكن حذف getHijriDate أو الاحتفاظ بها مع تمرير locale إذا لزم الأمر،
-  // لكن الأحسن التعامل مع التاريخ في الواجهة
+  // Placeholder implementation for Hijri date
+  // Gregorian is returned for stability unless a package is added.
   DateTime get now => DateTime.now();
 
   // Format time (e.g., 5:30 PM)
