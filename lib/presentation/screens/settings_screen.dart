@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import '../widgets/prayer_adjustment_dialog.dart';
 import 'package:sakin_app/l10n/generated/app_localizations.dart';
 
 import '../../core/theme.dart';
@@ -68,6 +69,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const Divider(height: 1),
                   _buildLanguageItem(context, l10n.french, const Locale('fr')),
                 ],
+              ),
+            ),
+
+            const SizedBox(height: 30),
+
+            // Prayer Settings Section
+            _buildSectionHeader('إعدادات الصلاة'),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: ListTile(
+                leading: const Icon(Icons.timer_outlined,
+                    color: AppTheme.primaryColor),
+                title: const Text('تعديل المواقيت يدوياً'),
+                subtitle: const Text('زيادة أو نقص دقائق عن المواقيت المحسوبة'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => const PrayerAdjustmentDialog(),
+                  );
+                },
               ),
             ),
 

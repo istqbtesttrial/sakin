@@ -5,6 +5,8 @@ import 'package:sakin_app/models/adhan_model.dart';
 import 'package:sakin_app/models/location_info.dart';
 import 'package:sakin_app/providers/dependencies/adhan_dependency_provider.dart';
 import 'package:sakin_app/utils/extensions.dart';
+import 'package:hive/hive.dart';
+import 'package:sakin_app/models/prayer_offsets.dart';
 
 const adhanTypeAny = -1;
 const adhanTypeFajr = 0;
@@ -112,10 +114,17 @@ class AdhanProvider with ChangeNotifier {
     );
     final sunnahTimes = adhan_lib.SunnahTimes(prayerTimes);
 
+    // Load Offsets from Hive
+    final box = Hive.box('settings');
+    final offsetsData = box.get('prayer_offsets');
+    final offsets = offsetsData != null
+        ? PrayerOffsets.fromJson(Map<String, dynamic>.from(offsetsData))
+        : PrayerOffsets();
+
     return [
       createAdhan(
         type: adhanTypeFajr,
-        startTime: prayerTimes.fajr,
+        startTime: prayerTimes.fajr.add(Duration(minutes: offsets.fajr)),
         endTime: prayerTimes.sunrise,
         startingPrayerTime: prayerTimes.fajr,
         shouldCorrect: date.isToday,
@@ -130,28 +139,28 @@ class AdhanProvider with ChangeNotifier {
         ),
       createAdhan(
         type: adhanTypeDhuhr,
-        startTime: prayerTimes.dhuhr,
+        startTime: prayerTimes.dhuhr.add(Duration(minutes: offsets.dhuhr)),
         endTime: prayerTimes.asr,
         startingPrayerTime: prayerTimes.fajr,
         shouldCorrect: date.isToday,
       ),
       createAdhan(
         type: adhanTypeAsr,
-        startTime: prayerTimes.asr,
+        startTime: prayerTimes.asr.add(Duration(minutes: offsets.asr)),
         endTime: prayerTimes.maghrib,
         startingPrayerTime: prayerTimes.fajr,
         shouldCorrect: date.isToday,
       ),
       createAdhan(
         type: adhanTypeMagrib,
-        startTime: prayerTimes.maghrib,
+        startTime: prayerTimes.maghrib.add(Duration(minutes: offsets.maghrib)),
         endTime: prayerTimes.isha,
         startingPrayerTime: prayerTimes.fajr,
         shouldCorrect: date.isToday,
       ),
       createAdhan(
         type: adhanTypeIsha,
-        startTime: prayerTimes.isha,
+        startTime: prayerTimes.isha.add(Duration(minutes: offsets.isha)),
         endTime: prayerTimes.fajr.add(const Duration(days: 1)),
         startingPrayerTime: prayerTimes.fajr,
         shouldCorrect: date.isToday,

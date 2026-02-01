@@ -182,8 +182,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                       final prayerData = prayers[index];
                       final prayer = prayerData['prayer'] as Prayer;
                       final prayerKey = prayerData['key'] as String;
-                      final time =
-                          prayerService.prayerTimes!.timeForPrayer(prayer);
+                      final time = prayerService.getAdjustedTime(prayer);
                       final isNext = prayerService.nextPrayer == prayer;
 
                       // Notification enabled status

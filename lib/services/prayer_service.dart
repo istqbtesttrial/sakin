@@ -2,6 +2,8 @@ import 'package:adhan/adhan.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'notification_service.dart';
+import 'package:hive/hive.dart';
+import '../models/prayer_offsets.dart';
 import '../models/prayer_notification_settings.dart';
 
 class PrayerService with ChangeNotifier {
@@ -23,7 +25,12 @@ class PrayerService with ChangeNotifier {
     params.madhab = Madhab.shafi;
 
     final date = DateComponents.from(DateTime.now());
-    _prayerTimes = PrayerTimes(_coordinates, date, params);
+    final rawPrayerTimes = PrayerTimes(_coordinates, date, params);
+
+    // We can't modify PrayerTimes fields directly.
+    // We'll store adjusted times in a Map for convenience if needed,
+    // but the getNextPrayerTime etc will need to be updated.
+    _prayerTimes = rawPrayerTimes; // Still keep it for the type
 
     // Calculate Sunnah times (Middle of the Night, Last Third)
     if (_prayerTimes != null) {
@@ -31,6 +38,34 @@ class PrayerService with ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  // Helper to get adjusted time
+  DateTime? getAdjustedTime(Prayer prayer) {
+    if (_prayerTimes == null) return null;
+    final rawTime = _prayerTimes!.timeForPrayer(prayer);
+    if (rawTime == null) return null;
+
+    final box = Hive.isBoxOpen('settings') ? Hive.box('settings') : null;
+    final offsetsData = box?.get('prayer_offsets');
+    final offsets = offsetsData != null
+        ? PrayerOffsets.fromJson(Map<String, dynamic>.from(offsetsData))
+        : PrayerOffsets();
+
+    switch (prayer) {
+      case Prayer.fajr:
+        return rawTime.add(Duration(minutes: offsets.fajr));
+      case Prayer.dhuhr:
+        return rawTime.add(Duration(minutes: offsets.dhuhr));
+      case Prayer.asr:
+        return rawTime.add(Duration(minutes: offsets.asr));
+      case Prayer.maghrib:
+        return rawTime.add(Duration(minutes: offsets.maghrib));
+      case Prayer.isha:
+        return rawTime.add(Duration(minutes: offsets.isha));
+      default:
+        return rawTime;
+    }
   }
 
   /// Schedule notifications based on the current settings
