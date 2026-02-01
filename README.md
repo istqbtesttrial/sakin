@@ -60,6 +60,34 @@ Sakin follows a clean and modular architecture for performance and maintainabili
     - [background_service_new.dart](file:///Users/fakhreddinefarhat/sakin_final/sakin_app/lib/services/background_service_new.dart): Background tasks.
     - [location_service.dart](file:///Users/fakhreddinefarhat/sakin_final/sakin_app/lib/services/location_service.dart): Location/GPS features.
   - **`utils/`**: Utilities and extensions.
+ 
+---
+ 
+## 🛠 Development Setup
+
+To get started with Sakin development on your local machine:
+
+1. **Prerequisites**:
+   - Flutter SDK (Latest Stable)
+   - Android Studio / VS Code
+   - CocoaPods (for iOS development)
+
+2. **Installation**:
+   ```bash
+   # Clone the repository
+   git clone https://github.com/your-username/sakin_app.git
+   
+   # Get dependencies
+   flutter pub get
+   
+   # Run code generation (for Hive & Models)
+   dart run build_runner build --delete-conflicting-outputs
+   ```
+
+3. **Running the App**:
+   ```bash
+   flutter run
+   ```
 
 ---
 
