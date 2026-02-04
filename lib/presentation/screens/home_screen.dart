@@ -1,20 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:provider/provider.dart';
+import 'package:adhan/adhan.dart' as adhan;
+import 'package:intl/intl.dart';
+import 'package:hijri/hijri_calendar.dart';
 import '../../core/theme.dart';
-import '../../data/hive_database.dart';
-
-import '../../services/permission_service.dart';
-
+import '../../services/prayer_service.dart';
 import 'adhkar_screen.dart';
 import 'tasbih_screen.dart';
-
-import 'package:intl/intl.dart';
-import 'package:sakin_app/l10n/generated/app_localizations.dart';
-
-import 'dart:async';
-import 'package:sakin_app/models/adhan_model.dart';
-import 'package:sakin_app/providers/adhan_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,370 +17,100 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Timer? _timer;
-
-  @override
-  void initState() {
-    super.initState();
-    // Update UI every minute to refresh countdown
-    _timer = Timer.periodic(const Duration(seconds: 30), (timer) {
-      if (mounted) setState(() {});
-    });
-
-    // Check for critical permissions (Xiaomi/Samsung)
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkPermissions();
-    });
-  }
-
-  Future<void> _checkPermissions() async {
-    final permissionService = PermissionService();
-    // 1. Check Standard Permissions
-    final granted = await permissionService.requestNotificationPermissions();
-    if (!granted && mounted) {
-      // Optional: Show snackbar
-    }
-
-    // 2. Check Device Specific (Xiaomi/Samsung)
-    if (await permissionService.hasPowerRestrictions()) {
-      if (mounted) {
-        _showPowerDialog(context, permissionService);
-      }
-    }
-  }
-
-  void _showPowerDialog(BuildContext context, PermissionService service) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('⚠️ تنبيه هام'),
-        content: const Text(
-            'هاتفك (شاومي/سامسونج) قد يمنع الأذان من العمل في الخلفية.\n\n'
-            'لضمان عمل الأذان 100%، يرجى تفعيل خيار:\n'
-            'Show on Lock Screen (أو Autostart)'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('لاحقاً'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryColor),
-            onPressed: () {
-              service.openPowerSettings();
-              Navigator.pop(ctx);
-            },
-            child: const Text('فتح الإعدادات',
-                style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
-    // Use the new AdhanProvider
-    final adhanProvider = Provider.of<AdhanProvider>(context);
-    final hiveDb = Provider.of<HiveDatabase>(context);
-    final l10n = AppLocalizations.of(context)!;
+    // Hijri setup
+    HijriCalendar.setLocal('ar');
+    final hijriDate = HijriCalendar.now();
+    final gregDate = DateTime.now();
 
-    // Get the upcoming Adhan
-    final nextAdhan = adhanProvider.nextAdhan;
-    final allAdhans = adhanProvider.getAdhanData(DateTime.now());
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
-    // Map prayer name
-    String prayerNameLocal = nextAdhan.title;
-
-    // Format upcoming prayer time string
-    String nextTimeStr =
-        DateFormat.jm(l10n.localeName).format(nextAdhan.startTime);
-
-    // Calculate remaining duration
-    final remainingDuration = nextAdhan.startTime.difference(DateTime.now());
-
-    // Format remaining time string
-    String remainingTimeStr = "";
-    final hours = remainingDuration.inHours;
-    final minutes = remainingDuration.inMinutes.remainder(60);
-    final nf = NumberFormat.decimalPattern(l10n.localeName);
-
-    if (hours > 0) {
-      remainingTimeStr =
-          "${nf.format(hours)} ${l10n.hour} ${l10n.and} ${nf.format(minutes)} ${l10n.minute}";
-    } else {
-      remainingTimeStr = "${nf.format(minutes)} ${l10n.minute}";
-    }
-
-    // Helper to format simple times
-    String formatTime(DateTime? t) {
-      if (t == null) return "--:--";
-      return DateFormat.jm(l10n.localeName).format(t);
-    }
-
-    // Extract Sunnah times
-    final midnightAdhan = allAdhans.firstWhere(
-        (a) => a.type == adhanTypeMidnight,
-        orElse: () => Adhan(
-            type: -1,
-            title: '',
-            startTime: DateTime.now(),
-            endTime: DateTime.now(),
-            notifyBefore: 0,
-            manualCorrection: 0,
-            localCode: '',
-            startingPrayerTime: DateTime.now(),
-            shouldCorrect: false));
-    final lastThirdAdhan = allAdhans.firstWhere(
-        (a) => a.type == adhanTypeThirdNight,
-        orElse: () => Adhan(
-            type: -1,
-            title: '',
-            startTime: DateTime.now(),
-            endTime: DateTime.now(),
-            notifyBefore: 0,
-            manualCorrection: 0,
-            localCode: '',
-            startingPrayerTime: DateTime.now(),
-            shouldCorrect: false));
+    // Defines shadow that is subtle in light mode and invisible/dark in dark mode
+    final List<BoxShadow> adaptiveShadow = isDark
+        ? [] // No shadow in dark mode for cleaner look
+        : [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 20,
+              offset: const Offset(0, 5),
+            ),
+          ];
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 20),
-              // Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.greeting,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        l10n.encouragement,
-                        style: const TextStyle(color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // Hero Card
+              _buildHeader(theme),
+              const SizedBox(height: 30),
+              _buildPrayerRing(theme, isDark),
+              const SizedBox(height: 25),
+              // Dates Section
               Container(
                 width: double.infinity,
-                height: 160,
-                padding: const EdgeInsets.all(20),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor,
-                  borderRadius: BorderRadius.circular(25),
-                  image: const DecorationImage(
-                    image: AssetImage('assets/images/app_icon.png'),
-                    opacity: 0.15,
-                    alignment: Alignment.centerRight,
-                    fit: BoxFit.contain,
-                  ),
+                  color: theme.cardColor,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: adaptiveShadow,
                 ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "${l10n.nextPrayer}: $prayerNameLocal",
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      nextTimeStr,
+                      hijriDate.toFormat("dd MMMM yyyy"),
                       style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 36,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryColor,
+                        fontFamily: 'Cairo',
                       ),
                     ),
-                    const Spacer(),
-                    Row(
-                      children: [
-                        const HugeIcon(
-                          icon: HugeIcons.strokeRoundedTimer02,
-                          color: Colors.white70,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 5),
-                        Text(
-                          "${l10n.timeLeft}: $remainingTimeStr",
-                          style: const TextStyle(color: Colors.white70),
-                        ),
-                      ],
+                    const SizedBox(height: 4),
+                    Text(
+                      DateFormat('EEEE، d MMMM yyyy', 'ar').format(gregDate),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontSize: 14,
+                        fontFamily: 'Cairo',
+                      ),
                     ),
                   ],
                 ),
               ),
-
-              const SizedBox(height: 20),
-
-              // Sunnah times (Midnight and Last Third)
-              if (midnightAdhan.type != -1)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 12,
-                    horizontal: 16,
-                  ),
-                  margin: const EdgeInsets.only(bottom: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: Colors.grey.withValues(alpha: 0.1),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withValues(alpha: 0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildSunnahTime(
-                        l10n.midnight,
-                        formatTime(midnightAdhan.startTime),
-                        HugeIcons.strokeRoundedMoon01,
-                      ),
-                      Container(
-                        width: 1,
-                        height: 30,
-                        color: Colors.grey.shade200,
-                      ),
-                      _buildSunnahTime(
-                        l10n.lastThird,
-                        formatTime(lastThirdAdhan.startTime),
-                        HugeIcons.strokeRoundedStar,
-                      ),
-                    ],
-                  ),
-                ),
-
-              // Quick action buttons
+              const SizedBox(height: 25),
+              // Grid (Row)
               Row(
                 children: [
                   Expanded(
-                    child: _QuickActionButton(
-                      icon: HugeIcons.strokeRoundedBookOpen01,
-                      label: l10n.adhkar,
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const AdhkarScreen()),
-                      ),
+                    child: _buildCard(
+                      context,
+                      "الأذكار",
+                      "Adhkar",
+                      HugeIcons.strokeRoundedBookOpen01,
+                      () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const AdhkarScreen())),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 16),
                   Expanded(
-                    child: _QuickActionButton(
-                      icon: HugeIcons.strokeRoundedFingerprintScan,
-                      label: l10n.tasbih,
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const TasbihScreen()),
-                      ),
+                    child: _buildCard(
+                      context,
+                      "التسبيح",
+                      "Tasbih",
+                      HugeIcons.strokeRoundedFingerPrint, // Updated Icon
+                      () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const TasbihScreen())),
                     ),
                   ),
                 ],
-              ),
-
-              const SizedBox(height: 10),
-
-              // Tasks Section
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    l10n.todaysTasks,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const HugeIcon(
-                      icon: HugeIcons.strokeRoundedAddCircle,
-                      color: AppTheme.primaryColor,
-                    ),
-                    onPressed: () {
-                      _showAddTaskDialog(context, hiveDb, l10n);
-                    },
-                  ),
-                ],
-              ),
-
-              Expanded(
-                child: hiveDb.tasks.isEmpty
-                    ? Center(
-                        child: Text(
-                          l10n.noTasksYet,
-                          style: const TextStyle(color: Colors.grey),
-                        ),
-                      )
-                    : ListView.builder(
-                        itemCount: hiveDb.tasks.length,
-                        itemBuilder: (context, index) {
-                          final task = hiveDb.tasks[index];
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 10),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: ListTile(
-                              leading: Checkbox(
-                                value: task['isDone'],
-                                activeColor: AppTheme.primaryColor,
-                                onChanged: (val) {
-                                  hiveDb.toggleTask(
-                                    task['key'],
-                                    task['isDone'],
-                                  );
-                                },
-                              ),
-                              title: Text(
-                                task['title'],
-                                style: TextStyle(
-                                  decoration: task['isDone']
-                                      ? TextDecoration.lineThrough
-                                      : null,
-                                  color: task['isDone']
-                                      ? Colors.grey
-                                      : Colors.black,
-                                ),
-                              ),
-                              trailing: IconButton(
-                                icon: const HugeIcon(
-                                  icon: HugeIcons.strokeRoundedDelete02,
-                                  color: Colors.redAccent,
-                                ),
-                                onPressed: () => hiveDb.deleteTask(task['key']),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
               ),
             ],
           ),
@@ -396,108 +119,179 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildSunnahTime(String label, String time, dynamic icon) {
-    return Column(
+  Widget _buildHeader(ThemeData theme) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start, // Aligned to start
       children: [
-        Row(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            HugeIcon(icon: icon, size: 16, color: AppTheme.primaryColor),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
-            ),
+            Text("السلام عليكم",
+                style: theme.textTheme.bodyMedium?.copyWith(fontSize: 14)),
+            Text("فخر الدين",
+                style: theme.textTheme.titleLarge
+                    ?.copyWith(fontSize: 20, fontWeight: FontWeight.bold)),
           ],
         ),
-        const SizedBox(height: 4),
-        Text(
-          time,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppTheme.primaryColor,
-          ),
-        ),
+        // Notification Icon Removed
       ],
     );
   }
 
-  void _showAddTaskDialog(
-    BuildContext context,
-    HiveDatabase db,
-    AppLocalizations l10n,
-  ) {
-    final controller = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.addTask),
-        content: TextField(
-          controller: controller,
-          decoration: InputDecoration(hintText: l10n.taskName),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancel),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
+  Widget _buildPrayerRing(ThemeData theme, bool isDark) {
+    return Consumer<PrayerService>(
+      builder: (context, prayerService, _) {
+        final nextPrayer = prayerService.nextPrayer;
+
+        String prayerName = "جاري التحميل...";
+        String prayerTime = "--:--";
+        dynamic icon = HugeIcons.strokeRoundedMoon02;
+        String nextPrayerName = "الصلاة القادمة";
+
+        if (prayerService.prayerTimes != null) {
+          final adjustedNext = prayerService.getAdjustedTime(nextPrayer);
+
+          // Map English names to Arabic
+          switch (nextPrayer) {
+            case adhan.Prayer.fajr:
+              prayerName = "الفجر";
+              icon = HugeIcons.strokeRoundedSun02;
+              break;
+            case adhan.Prayer.dhuhr:
+              prayerName = "الظهر";
+              icon = HugeIcons.strokeRoundedSun03;
+              break;
+            case adhan.Prayer.asr:
+              prayerName = "العصر";
+              icon = HugeIcons.strokeRoundedSun01;
+              break;
+            case adhan.Prayer.maghrib:
+              prayerName = "المغرب";
+              icon = HugeIcons.strokeRoundedSunset;
+              break;
+            case adhan.Prayer.isha:
+              prayerName = "العشاء";
+              icon = HugeIcons.strokeRoundedMoon01;
+              break;
+            case adhan.Prayer.none:
+              prayerName = "الفجر";
+              icon = HugeIcons.strokeRoundedSun02;
+              break;
+            default:
+              prayerName = "الفجر";
+          }
+
+          if (adjustedNext != null) {
+            prayerTime = DateFormat.jm().format(adjustedNext);
+          } else if (nextPrayer == adhan.Prayer.none) {
+            final fajr = prayerService.fajr;
+            if (fajr != null) {
+              prayerTime = DateFormat.jm().format(fajr);
+            }
+          }
+        }
+
+        return Container(
+          height: 240,
+          width: 240,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppTheme.primaryColor.withValues(alpha: 0.08),
+                AppTheme.primaryColor.withValues(alpha: 0.03),
+              ],
             ),
-            onPressed: () {
-              if (controller.text.isNotEmpty) {
-                db.addTask(controller.text);
-                Navigator.pop(context);
-              }
-            },
-            child: Text(l10n.save, style: const TextStyle(color: Colors.white)),
+            border: Border.all(
+                color: isDark
+                    ? Colors.white12
+                    : Colors.white.withValues(alpha: 0.6),
+                width: 2),
+            boxShadow: [
+              BoxShadow(
+                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                  blurRadius: 40,
+                  spreadRadius: 5),
+            ],
           ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Quick Action Button widget
-class _QuickActionButton extends StatelessWidget {
-  final dynamic icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _QuickActionButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      elevation: 2,
-      shadowColor: Colors.grey.withValues(alpha: 0.2),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Row(
+          child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              HugeIcon(icon: icon, color: AppTheme.primaryColor, size: 24),
-              const SizedBox(width: 10),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.primaryColor,
-                ),
+              HugeIcon(icon: icon, color: AppTheme.primaryColor, size: 32),
+              const SizedBox(height: 12),
+              Text(prayerName,
+                  style: theme.textTheme.titleMedium
+                      ?.copyWith(fontSize: 22, fontWeight: FontWeight.w500)),
+              Text(prayerTime,
+                  style: const TextStyle(
+                      fontSize: 48,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme
+                          .primaryColor, // Changed to primary for consistency in dark mode
+                      height: 1.0)),
+              const SizedBox(height: 12),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                decoration: BoxDecoration(
+                    color: AppTheme.primaryColor,
+                    borderRadius: BorderRadius.circular(20)),
+                child: Text(nextPrayerName,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12)),
               ),
             ],
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCard(BuildContext context, String titleAr, String titleEn,
+      dynamic icon, VoidCallback onTap) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 160,
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: isDark
+              ? []
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: theme.scaffoldBackgroundColor, // Dynamic background
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child:
+                  HugeIcon(icon: icon, color: AppTheme.primaryColor, size: 30),
+            ),
+            const SizedBox(height: 16),
+            Text(titleEn,
+                style: theme.textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(titleAr,
+                style: theme.textTheme.bodySmall?.copyWith(fontSize: 12)),
+          ],
         ),
       ),
     );
