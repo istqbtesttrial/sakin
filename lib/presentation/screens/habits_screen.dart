@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 import '../../core/theme.dart';
-import '../../core/services/habit_service.dart'; // تأكد من الاستيراد
+import '../../core/services/habit_service.dart'; // Ensure import
+import 'package:sakin_app/l10n/generated/app_localizations.dart';
 
 class HabitsScreen extends StatefulWidget {
   const HabitsScreen({super.key});
@@ -16,7 +17,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
   bool _isDeleteMode = false;
 
   List<Map<String, dynamic>> _habits = [];
-  List<double> _heatmapData = []; // بيانات آخر 28 يوم
+  List<double> _heatmapData = []; // Last 28 days data
   double _todayProgress = 0.0;
 
   @override
@@ -26,22 +27,22 @@ class _HabitsScreenState extends State<HabitsScreen> {
   }
 
   Future<void> _loadData() async {
-    // 1. تحميل العادات
+    // 1. Load habits
     final habits = HabitService.loadHabits();
 
-    // 2. تجهيز بيانات الهيت ماب (آخر 28 يوم)
+    // 2. Prepare heatmap data (Last 28 days)
     final history = HabitService.loadHeatmap();
     List<double> heatmap = [];
     final now = DateTime.now();
 
-    // نرجع للوراء 27 يوم + اليوم الحالي = 28 مربع
+    // Go back 27 days + today = 28 blocks
     for (int i = 27; i >= 0; i--) {
       DateTime date = now.subtract(Duration(days: i));
       String dateKey = date.toIso8601String().split('T')[0];
-      heatmap.add(history[dateKey] ?? 0.0); // 0.0 إذا لم يوجد سجل
+      heatmap.add(history[dateKey] ?? 0.0); // 0.0 if incomplete
     }
 
-    // 3. حساب نسبة اليوم الحالي للعرض
+    // 3. Calculate today's progress percentage
     int completed = habits.where((h) => h['completed'] == true).length;
     double progress = habits.isEmpty ? 0 : completed / habits.length;
 
@@ -52,10 +53,10 @@ class _HabitsScreenState extends State<HabitsScreen> {
     });
   }
 
-  // دالة الحفظ المركزية وتحديث الواجهة
+  // Central save function and UI update
   Future<void> _saveAndUpdate() async {
     await HabitService.saveHabits(_habits);
-    _loadData(); // إعادة تحميل لتحديث الهيت ماب فوراً
+    _loadData(); // Reload to update heatmap immediately
   }
 
   @override
@@ -73,7 +74,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
             children: [
               _buildHeader(isDark),
               const SizedBox(height: 20),
-              Text("سجل الالتزام",
+              Text(AppLocalizations.of(context)!.habitLog,
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: isDark ? Colors.white70 : Colors.black54)),
@@ -82,7 +83,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
               const SizedBox(height: 25),
               _buildControlBar(isDark),
               const SizedBox(height: 15),
-              Text("مهام اليوم",
+              Text(AppLocalizations.of(context)!.todaysTasks,
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
@@ -102,13 +103,15 @@ class _HabitsScreenState extends State<HabitsScreen> {
     return Row(
       children: [
         Expanded(
-            child: _controlBtn("إضافة", HugeIcons.strokeRoundedPlusSign,
+            child: _controlBtn(AppLocalizations.of(context)!.addHabit,
+                HugeIcons.strokeRoundedPlusSign,
                 isDark: isDark,
                 isActive: false,
                 onTap: () => _showHabitDialog())),
         const SizedBox(width: 10),
         Expanded(
-            child: _controlBtn("تعديل", HugeIcons.strokeRoundedEdit02,
+            child: _controlBtn(AppLocalizations.of(context)!.edit,
+                HugeIcons.strokeRoundedEdit02,
                 isDark: isDark,
                 isActive: _isEditMode,
                 activeColor: Colors.orange,
@@ -118,7 +121,8 @@ class _HabitsScreenState extends State<HabitsScreen> {
                     }))),
         const SizedBox(width: 10),
         Expanded(
-            child: _controlBtn("حذف", HugeIcons.strokeRoundedDelete02,
+            child: _controlBtn(AppLocalizations.of(context)!.delete,
+                HugeIcons.strokeRoundedDelete02,
                 isDark: isDark,
                 isActive: _isDeleteMode,
                 activeColor: Colors.red,
@@ -173,8 +177,8 @@ class _HabitsScreenState extends State<HabitsScreen> {
   Widget _buildHabitsList(bool isDark) {
     if (_habits.isEmpty) {
       return Center(
-          child: Text("لا توجد عادات مضافة",
-              style: TextStyle(color: Colors.grey)));
+          child: Text(AppLocalizations.of(context)!.noTasksYet,
+              style: const TextStyle(color: Colors.grey)));
     }
     return ListView.separated(
       shrinkWrap: true,
@@ -192,7 +196,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
             } else if (_isEditMode) {
               _showHabitDialog(initialTitle: habit['title'], index: index);
             } else {
-              // تبديل الحالة والحفظ
+              // Toggle status and save
               setState(() => _habits[index]['completed'] = !isCompleted);
               _saveAndUpdate();
             }
@@ -278,18 +282,19 @@ class _HabitsScreenState extends State<HabitsScreen> {
 
   void _showHabitDialog({String? initialTitle, int? index}) {
     final controller = TextEditingController(text: initialTitle);
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: Theme.of(context).cardColor,
-        title: Text(initialTitle == null ? "إضافة عادة" : "تعديل العادة"),
+        title: Text(initialTitle == null ? l10n.addHabit : l10n.editHabit),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(hintText: "اسم العادة"),
+          decoration: InputDecoration(hintText: l10n.habitName),
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx), child: const Text("إلغاء")),
+              onPressed: () => Navigator.pop(ctx), child: Text(l10n.cancel)),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryColor,
@@ -310,7 +315,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
               }
               Navigator.pop(ctx);
             },
-            child: const Text("حفظ"),
+            child: Text(l10n.save),
           ),
         ],
       ),
@@ -318,15 +323,16 @@ class _HabitsScreenState extends State<HabitsScreen> {
   }
 
   void _showDeleteConfirm(int index) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: Theme.of(context).cardColor,
-        title: const Text("حذف العادة؟"),
-        content: const Text("هل أنت متأكد؟"),
+        title: Text(l10n.deleteHabitTitle),
+        content: Text(l10n.deleteHabitConfirmation),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx), child: const Text("إلغاء")),
+              onPressed: () => Navigator.pop(ctx), child: Text(l10n.cancel)),
           TextButton(
             onPressed: () {
               setState(() {
@@ -336,7 +342,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
               _saveAndUpdate();
               Navigator.pop(ctx);
             },
-            child: const Text("حذف", style: TextStyle(color: Colors.red)),
+            child: Text(l10n.delete, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -361,12 +367,12 @@ class _HabitsScreenState extends State<HabitsScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text("لوحة الإنجاز",
+            Text(AppLocalizations.of(context)!.achievementBoard,
                 style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: isDark ? Colors.white : Colors.black)),
-            Text("خطواتك الصغيرة تصنع فرقاً كبيراً",
+            Text(AppLocalizations.of(context)!.smallSteps,
                 style: TextStyle(
                     fontSize: 12,
                     color: isDark ? Colors.white70 : Colors.grey)),
@@ -398,7 +404,8 @@ class _HabitsScreenState extends State<HabitsScreen> {
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16)),
       child: GridView.builder(
-        shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 7, crossAxisSpacing: 5, mainAxisSpacing: 5),
         itemCount: 28, // 4 weeks
@@ -413,7 +420,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
               borderRadius: BorderRadius.circular(4),
               border: i == 27
                   ? Border.all(color: AppTheme.primaryColor, width: 2)
-                  : null, // تمييز اليوم الحالي
+                  : null, // Highlight today
             ),
           );
         },
@@ -422,7 +429,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
   }
 
   dynamic _getIcon(dynamic code) {
-    // يمكن توسيع هذا ليعود بأيقونات مختلفة بناء على كود
+    // This can be expanded to return different icons based on code
     return HugeIcons.strokeRoundedCheckList;
   }
 }

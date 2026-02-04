@@ -73,10 +73,6 @@ class PermissionService {
     }
 
     // 3. System Alert Window (For full screen intent on some ROMs)
-    var systemAlertStatus = await Permission.systemAlertWindow.status;
-    if (!systemAlertStatus.isGranted) {
-      await Permission.systemAlertWindow.request();
-    }
 
     return status.isGranted;
   }

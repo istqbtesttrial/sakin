@@ -7,7 +7,6 @@ import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_ar.dart';
 import 'app_localizations_en.dart';
-import 'app_localizations_fr.dart';
 
 // ignore_for_file: type=lint
 
@@ -96,8 +95,7 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('ar'),
-    Locale('en'),
-    Locale('fr')
+    Locale('en')
   ];
 
   /// No description provided for @settingsTitle.
@@ -105,6 +103,24 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'الإعدادات'**
   String get settingsTitle;
+
+  /// No description provided for @general.
+  ///
+  /// In ar, this message translates to:
+  /// **'عام'**
+  String get general;
+
+  /// No description provided for @system.
+  ///
+  /// In ar, this message translates to:
+  /// **'النظام'**
+  String get system;
+
+  /// No description provided for @darkMode.
+  ///
+  /// In ar, this message translates to:
+  /// **'الوضع الداكن'**
+  String get darkMode;
 
   /// No description provided for @language.
   ///
@@ -177,12 +193,6 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'English'**
   String get english;
-
-  /// No description provided for @french.
-  ///
-  /// In ar, this message translates to:
-  /// **'Français'**
-  String get french;
 
   /// No description provided for @greeting.
   ///
@@ -333,6 +343,168 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'تتبع الصلوات'**
   String get prayerTracking;
+
+  /// No description provided for @ignoreBatteryOptimization.
+  ///
+  /// In ar, this message translates to:
+  /// **'تجاهل تحسين البطارية'**
+  String get ignoreBatteryOptimization;
+
+  /// No description provided for @batteryOptimized.
+  ///
+  /// In ar, this message translates to:
+  /// **'مفعّل - الأذان يعمل بدقة'**
+  String get batteryOptimized;
+
+  /// No description provided for @batteryRestricted.
+  ///
+  /// In ar, this message translates to:
+  /// **'غير مفعّل - قد يتأخر الأذان'**
+  String get batteryRestricted;
+
+  /// No description provided for @habitLog.
+  ///
+  /// In ar, this message translates to:
+  /// **'سجل الالتزام'**
+  String get habitLog;
+
+  /// No description provided for @edit.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل'**
+  String get edit;
+
+  /// No description provided for @delete.
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف'**
+  String get delete;
+
+  /// No description provided for @addHabit.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة عادة'**
+  String get addHabit;
+
+  /// No description provided for @editHabit.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل العادة'**
+  String get editHabit;
+
+  /// No description provided for @habitName.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم العادة'**
+  String get habitName;
+
+  /// No description provided for @deleteHabitTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف العادة؟'**
+  String get deleteHabitTitle;
+
+  /// No description provided for @deleteHabitConfirmation.
+  ///
+  /// In ar, this message translates to:
+  /// **'هل أنت متأكد؟'**
+  String get deleteHabitConfirmation;
+
+  /// No description provided for @achievementBoard.
+  ///
+  /// In ar, this message translates to:
+  /// **'لوحة الإنجاز'**
+  String get achievementBoard;
+
+  /// No description provided for @smallSteps.
+  ///
+  /// In ar, this message translates to:
+  /// **'خطواتك الصغيرة تصنع فرقاً كبيراً'**
+  String get smallSteps;
+
+  /// No description provided for @updatingLocation.
+  ///
+  /// In ar, this message translates to:
+  /// **'جاري تحديث الموقع...'**
+  String get updatingLocation;
+
+  /// No description provided for @changeLocation.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيير الموقع'**
+  String get changeLocation;
+
+  /// No description provided for @locationChangeDetected.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم اكتشاف تغيير كبير في الموقع ولديك تعديلات يدوية محفوظة.\nهل تريد الاحتفاظ بها للموقع الجديد أم إعادة ضبطها؟'**
+  String get locationChangeDetected;
+
+  /// No description provided for @keep.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاحتفاظ'**
+  String get keep;
+
+  /// No description provided for @reset.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء التعديلات'**
+  String get reset;
+
+  /// No description provided for @locationUpdatedSuccess.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تحديث الموقع والمواقيت بنجاح'**
+  String get locationUpdatedSuccess;
+
+  /// No description provided for @errorOccurred.
+  ///
+  /// In ar, this message translates to:
+  /// **'حدث خطأ'**
+  String get errorOccurred;
+
+  /// No description provided for @refreshLocation.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحديث الموقع'**
+  String get refreshLocation;
+
+  /// No description provided for @refreshing.
+  ///
+  /// In ar, this message translates to:
+  /// **'جاري التحديث...'**
+  String get refreshing;
+
+  /// No description provided for @mosqueTimeSync.
+  ///
+  /// In ar, this message translates to:
+  /// **'مزامنة وقت المسجد'**
+  String get mosqueTimeSync;
+
+  /// No description provided for @mosqueTimeSyncDesc.
+  ///
+  /// In ar, this message translates to:
+  /// **'يمكنك الضغط على أي صلاة لتخصيص وقت الأذان (تقديم أو تأخير) ليتطابق مع أذان المسجد القريب منك.'**
+  String get mosqueTimeSyncDesc;
+
+  /// No description provided for @adjustTime.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل وقت {prayerName}'**
+  String adjustTime(String prayerName);
+
+  /// No description provided for @adjustTimeDesc.
+  ///
+  /// In ar, this message translates to:
+  /// **'تقديم أو تأخير الوقت بالدقائق'**
+  String get adjustTimeDesc;
+
+  /// No description provided for @selectLocation.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر الموقع'**
+  String get selectLocation;
 }
 
 class _AppLocalizationsDelegate
@@ -346,7 +518,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['ar', 'en', 'fr'].contains(locale.languageCode);
+      <String>['ar', 'en'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -359,8 +531,6 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
       return AppLocalizationsAr();
     case 'en':
       return AppLocalizationsEn();
-    case 'fr':
-      return AppLocalizationsFr();
   }
 
   throw FlutterError(

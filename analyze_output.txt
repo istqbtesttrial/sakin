@@ -1,0 +1,18 @@
+Analyzing sakin_app...                                          
+
+warning • Unused import: 'package:flutter/material.dart' • lib/core/services/settings_service.dart:1:8 • unused_import
+  error • Target of URI doesn't exist: '../../services/settings_service.dart' • lib/presentation/screens/habits_screen.dart:7:8 • uri_does_not_exist
+  error • Undefined name 'SettingsService' • lib/presentation/screens/habits_screen.dart:182:25 • undefined_identifier
+  error • Undefined name 'SettingsService' • lib/presentation/screens/habits_screen.dart:195:28 • undefined_identifier
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/home_screen.dart:164:26 • prefer_const_constructors
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/presentation/screens/prayer_times_screen.dart:258:35 • deprecated_member_use
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor or activeTrackColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/presentation/screens/settings_screen.dart:85:25 • deprecated_member_use
+warning • The member 'notifyListeners' can only be used within 'package:flutter/src/foundation/change_notifier.dart' or a test • lib/presentation/screens/settings_screen.dart:221:28 • invalid_use_of_visible_for_testing_member
+warning • The member 'notifyListeners' can only be used within instance members of subclasses of 'ChangeNotifier' • lib/presentation/screens/settings_screen.dart:221:28 • invalid_use_of_protected_member
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/presentation/screens/settings_screen.dart:258:44 • deprecated_member_use
+   info • Statements in an if should be enclosed in a block • lib/presentation/screens/tasbih_screen.dart:32:13 • curly_braces_in_flow_control_structures
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • lib/presentation/screens/tasbih_screen.dart:86:30 • prefer_const_literals_to_create_immutables
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/tasbih_screen.dart:87:21 • prefer_const_constructors
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • lib/presentation/screens/tasbih_screen.dart:154:24 • prefer_const_literals_to_create_immutables
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/tasbih_screen.dart:154:25 • prefer_const_constructors
+

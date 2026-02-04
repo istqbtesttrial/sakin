@@ -1,6 +1,9 @@
 {
     "@@locale": "ar",
     "settingsTitle": "الإعدادات",
+    "general": "عام",
+    "system": "النظام",
+    "darkMode": "الوضع الداكن",
     "language": "اللغة",
     "appVersion": "معلومات التطبيق",
     "version": "الإصدار",
@@ -13,7 +16,6 @@
     "changeLanguage": "تغيير اللغة",
     "arabic": "العربية",
     "english": "English",
-    "french": "Français",
     "greeting": "السلام عليكم،",
     "encouragement": "واصل عملك الجيد!",
     "nextPrayer": "الصلاة القادمة",
@@ -38,5 +40,40 @@
     "and": "و",
     "dailyTracking": "تتبع صلوات اليوم",
     "monthlyStats": "الإحصائيات الشهرية",
-    "prayerTracking": "تتبع الصلوات"
+    "prayerTracking": "تتبع الصلوات",
+    "ignoreBatteryOptimization": "تجاهل تحسين البطارية",
+    "batteryOptimized": "مفعّل - الأذان يعمل بدقة",
+    "batteryRestricted": "غير مفعّل - قد يتأخر الأذان",
+    "habitLog": "سجل الالتزام",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "addHabit": "إضافة عادة",
+    "editHabit": "تعديل العادة",
+    "habitName": "اسم العادة",
+    "deleteHabitTitle": "حذف العادة؟",
+    "deleteHabitConfirmation": "هل أنت متأكد؟",
+    "achievementBoard": "لوحة الإنجاز",
+    "smallSteps": "خطواتك الصغيرة تصنع فرقاً كبيراً",
+    "updatingLocation": "جاري تحديث الموقع...",
+    "changeLocation": "تغيير الموقع",
+    "locationChangeDetected": "تم اكتشاف تغيير كبير في الموقع ولديك تعديلات يدوية محفوظة.\nهل تريد الاحتفاظ بها للموقع الجديد أم إعادة ضبطها؟",
+    "keep": "الاحتفاظ",
+    "reset": "إلغاء التعديلات",
+    "locationUpdatedSuccess": "تم تحديث الموقع والمواقيت بنجاح",
+    "errorOccurred": "حدث خطأ",
+    "refreshLocation": "تحديث الموقع",
+    "refreshing": "جاري التحديث...",
+    "mosqueTimeSync": "مزامنة وقت المسجد",
+    "mosqueTimeSyncDesc": "يمكنك الضغط على أي صلاة لتخصيص وقت الأذان (تقديم أو تأخير) ليتطابق مع أذان المسجد القريب منك.",
+    "adjustTime": "تعديل وقت {prayerName}",
+    "@adjustTime": {
+        "placeholders": {
+            "prayerName": {
+                "type": "String",
+                "example": "Fajr"
+            }
+        }
+    },
+    "adjustTimeDesc": "تقديم أو تأخير الوقت بالدقائق",
+    "selectLocation": "اختر الموقع"
 }

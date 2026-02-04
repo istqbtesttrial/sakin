@@ -7,6 +7,8 @@ import '../../core/services/settings_service.dart';
 import '../../core/services/location_service.dart';
 import '../../core/services/prayer_service.dart';
 import '../../services/notification_service.dart';
+import '../../core/utils/number_converter.dart';
+import 'package:sakin_app/l10n/generated/app_localizations.dart';
 
 class PrayerTimesScreen extends StatefulWidget {
   const PrayerTimesScreen({super.key});
@@ -45,9 +47,9 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
 
     // Show loading snackbar
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("جاري تحديث الموقع..."),
-        duration: Duration(seconds: 1),
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.updatingLocation),
+        duration: const Duration(seconds: 1),
       ),
     );
 
@@ -78,23 +80,24 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
 
         if (shouldAsk) {
           // Show Dialog
+          final l10n = AppLocalizations.of(context)!;
           final shouldReset = await showDialog<bool>(
             context: context,
             builder: (ctx) => AlertDialog(
-              title: const Text("تغيير الموقع", textAlign: TextAlign.right),
-              content: const Text(
-                "تم اكتشاف تغيير كبير في الموقع ولديك تعديلات يدوية محفوظة.\nهل تريد الاحتفاظ بها للموقع الجديد أم إعادة ضبطها؟",
+              title: Text(l10n.changeLocation, textAlign: TextAlign.right),
+              content: Text(
+                l10n.locationChangeDetected,
                 textAlign: TextAlign.right,
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx, false), // Keep
-                  child: const Text("الاحتفاظ"),
+                  child: Text(l10n.keep),
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(ctx, true), // Reset
-                  child: const Text("إلغاء التعديلات",
-                      style: TextStyle(color: Colors.red)),
+                  child: Text(l10n.reset,
+                      style: const TextStyle(color: Colors.red)),
                 ),
               ],
             ),
@@ -117,8 +120,8 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("تم تحديث الموقع والمواقيت بنجاح"),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.locationUpdatedSuccess),
             backgroundColor: Colors.green,
           ),
         );
@@ -127,7 +130,8 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("حدث خطأ: ${e.toString()}"),
+            content: Text(
+                "${AppLocalizations.of(context)!.errorOccurred}: ${e.toString()}"),
             backgroundColor: Colors.red,
           ),
         );
@@ -144,14 +148,15 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    HijriCalendar.setLocal('ar');
+    final l10n = AppLocalizations.of(context)!;
+    HijriCalendar.setLocal(l10n.localeName);
     final hijriDate = HijriCalendar.now();
     final gregDate = DateTime.now();
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text("مواقيت الصلاة"),
+        title: Text(l10n.prayerTimes),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -193,7 +198,8 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                             const SizedBox(width: 8),
                             // Use SettingService directly which updates on refresh
                             Text(
-                              SettingsService.location,
+                              SettingsService.location ??
+                                  AppLocalizations.of(context)!.selectLocation,
                               style: theme.textTheme.titleMedium
                                   ?.copyWith(fontWeight: FontWeight.bold),
                             ),
@@ -210,7 +216,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                           ),
                         ),
                         Text(
-                          DateFormat('EEEE، d MMMM yyyy', 'ar')
+                          DateFormat('EEEE، d MMMM yyyy', l10n.localeName)
                               .format(gregDate),
                           style: theme.textTheme.bodyMedium
                               ?.copyWith(color: Colors.grey, fontSize: 12),
@@ -240,7 +246,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                                   size: 16,
                                 ),
                           label: Text(
-                            _isLoading ? "جاري التحديث..." : "تحديث الموقع",
+                            _isLoading ? l10n.refreshing : l10n.refreshLocation,
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
@@ -259,11 +265,11 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
               Expanded(
                 child: ListView(
                   children: [
-                    _buildPrayerCard(context, "Fajr", "الفجر"),
-                    _buildPrayerCard(context, "Dhuhr", "الظهر"),
-                    _buildPrayerCard(context, "Asr", "العصر"),
-                    _buildPrayerCard(context, "Maghrib", "المغرب"),
-                    _buildPrayerCard(context, "Isha", "العشاء"),
+                    _buildPrayerCard(context, "Fajr", l10n.fajr),
+                    _buildPrayerCard(context, "Dhuhr", l10n.dhuhr),
+                    _buildPrayerCard(context, "Asr", l10n.asr),
+                    _buildPrayerCard(context, "Maghrib", l10n.maghrib),
+                    _buildPrayerCard(context, "Isha", l10n.isha),
                     const SizedBox(height: 20),
                     _buildHintBox(isDark),
                     const SizedBox(height: 20),
@@ -301,9 +307,9 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "مزامنة وقت المسجد",
-                  style: TextStyle(
+                Text(
+                  AppLocalizations.of(context)!.mosqueTimeSync,
+                  style: const TextStyle(
                     fontFamily: 'Cairo',
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
@@ -311,7 +317,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  "يمكنك الضغط على أي صلاة لتخصيص وقت الأذان (تقديم أو تأخير) ليتطابق مع أذان المسجد القريب منك.",
+                  AppLocalizations.of(context)!.mosqueTimeSyncDesc,
                   style: TextStyle(
                     fontFamily: 'Cairo',
                     fontSize: 12,
@@ -346,7 +352,8 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
     final int offset = SettingsService.getPrayerOffset(id);
     final DateTime adjustedDateTime =
         baseDateTime.add(Duration(minutes: offset));
-    final String displayTime = DateFormat.jm().format(adjustedDateTime);
+    final String displayTime =
+        DateFormat.jm().format(adjustedDateTime).toWesternArabic;
 
     return GestureDetector(
       onTap: () => _showAdjustmentDialog(context, id, nameAr, offset),
@@ -422,17 +429,18 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
       BuildContext context, String id, String name, int currentOffset) async {
     int newOffset = currentOffset;
 
+    final l10n = AppLocalizations.of(context)!;
     await showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) {
           return AlertDialog(
             backgroundColor: Theme.of(context).cardColor,
-            title: Text("تعديل وقت $name", textAlign: TextAlign.center),
+            title: Text(l10n.adjustTime(name), textAlign: TextAlign.center),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text("تقديم أو تأخير الوقت بالدقائق"),
+                Text(l10n.adjustTimeDesc),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -465,7 +473,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text("إلغاء"),
+                child: Text(l10n.cancel),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -477,7 +485,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                     Navigator.pop(context);
                   }
                 },
-                child: const Text("حفظ"),
+                child: Text(l10n.save),
               ),
             ],
           );

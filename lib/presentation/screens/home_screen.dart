@@ -5,9 +5,13 @@ import 'package:adhan/adhan.dart' as adhan;
 import 'package:intl/intl.dart';
 import 'package:hijri/hijri_calendar.dart';
 import '../../core/theme.dart';
+import '../../core/utils/number_converter.dart';
 import '../../services/prayer_service.dart';
 import 'adhkar_screen.dart';
 import 'tasbih_screen.dart';
+import 'package:sakin_app/l10n/generated/app_localizations.dart';
+import '../../core/services/settings_service.dart';
+import '../../services/location_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,10 +22,51 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkLocation();
+    });
+  }
+
+  void _checkLocation() {
+    // If location is not set, fetch it in background without await
+    if (SettingsService.location == null) {
+      debugPrint("HomeScreen: No location found. Fetching in background...");
+      // Fire and forget
+      Provider.of<LocationService>(context, listen: false).getCurrentLocation();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Generic l10n safety check
+    final l10n = AppLocalizations.of(context);
+    if (l10n == null) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     // Hijri setup
-    HijriCalendar.setLocal('ar');
-    final hijriDate = HijriCalendar.now();
+    final localeName = l10n.localeName;
+    try {
+      HijriCalendar.setLocal(localeName);
+    } catch (_) {
+      // Fallback to English if locale is not supported
+      HijriCalendar.setLocal('en');
+    }
+
+    HijriCalendar hijriDate;
+    try {
+      hijriDate = HijriCalendar.now();
+    } catch (_) {
+      // Emergency fallback if .now() fails due to internal issues
+      HijriCalendar.setLocal('en');
+      hijriDate = HijriCalendar.now();
+    }
     final gregDate = DateTime.now();
 
     final theme = Theme.of(context);
@@ -62,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   children: [
                     Text(
-                      hijriDate.toFormat("dd MMMM yyyy"),
+                      hijriDate.toFormat("dd MMMM yyyy").toWesternArabic,
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -72,7 +117,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      DateFormat('EEEE، d MMMM yyyy', 'ar').format(gregDate),
+                      DateFormat('EEEE، d MMMM yyyy', localeName)
+                          .format(gregDate)
+                          .toWesternArabic,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         fontSize: 14,
                         fontFamily: 'Cairo',
@@ -88,8 +135,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   Expanded(
                     child: _buildCard(
                       context,
-                      "الأذكار",
-                      "Adhkar",
+                      AppLocalizations.of(context)!.adhkar,
+                      "Adhkar", // Keep English fallback/subtitle or remove if redundant
                       HugeIcons.strokeRoundedBookOpen01,
                       () => Navigator.push(
                           context,
@@ -101,8 +148,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   Expanded(
                     child: _buildCard(
                       context,
-                      "التسبيح",
-                      "Tasbih",
+                      AppLocalizations.of(context)!.tasbih,
+                      "Tasbih", // Keep English or remove
                       HugeIcons.strokeRoundedFingerPrint, // Updated Icon
                       () => Navigator.push(
                           context,
@@ -120,17 +167,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHeader(ThemeData theme) {
+    // Need access to l10n here, but since parent checked it, it should be fine.
+    // However, looking up via context again is cleaner than passing arguments down.
+    final l10n = AppLocalizations.of(context)!;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.start, // Aligned to start
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("السلام عليكم",
+            Text(l10n.greeting,
                 style: theme.textTheme.bodyMedium?.copyWith(fontSize: 14)),
-            Text("فخر الدين",
-                style: theme.textTheme.titleLarge
-                    ?.copyWith(fontSize: 20, fontWeight: FontWeight.bold)),
           ],
         ),
         // Notification Icon Removed
@@ -143,50 +191,53 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context, prayerService, _) {
         final nextPrayer = prayerService.nextPrayer;
 
-        String prayerName = "جاري التحميل...";
+        final l10n = AppLocalizations.of(context);
+        if (l10n == null) return const SizedBox();
+
+        String prayerName = "Loading...";
         String prayerTime = "--:--";
         dynamic icon = HugeIcons.strokeRoundedMoon02;
-        String nextPrayerName = "الصلاة القادمة";
+        String nextPrayerName = l10n.nextPrayer;
 
         if (prayerService.prayerTimes != null) {
           final adjustedNext = prayerService.getAdjustedTime(nextPrayer);
 
-          // Map English names to Arabic
           switch (nextPrayer) {
             case adhan.Prayer.fajr:
-              prayerName = "الفجر";
+              prayerName = l10n.fajr;
               icon = HugeIcons.strokeRoundedSun02;
               break;
             case adhan.Prayer.dhuhr:
-              prayerName = "الظهر";
+              prayerName = l10n.dhuhr;
               icon = HugeIcons.strokeRoundedSun03;
               break;
             case adhan.Prayer.asr:
-              prayerName = "العصر";
+              prayerName = l10n.asr;
               icon = HugeIcons.strokeRoundedSun01;
               break;
             case adhan.Prayer.maghrib:
-              prayerName = "المغرب";
+              prayerName = l10n.maghrib;
               icon = HugeIcons.strokeRoundedSunset;
               break;
             case adhan.Prayer.isha:
-              prayerName = "العشاء";
+              prayerName = l10n.isha;
               icon = HugeIcons.strokeRoundedMoon01;
               break;
             case adhan.Prayer.none:
-              prayerName = "الفجر";
+              prayerName = l10n.fajr; // Rolls over to Fajr next day typically
               icon = HugeIcons.strokeRoundedSun02;
               break;
             default:
-              prayerName = "الفجر";
+              prayerName = l10n.fajr;
           }
 
           if (adjustedNext != null) {
-            prayerTime = DateFormat.jm().format(adjustedNext);
+            // Use local format (e.g. 12h or 24h depending on locale if needed, but jm is good)
+            prayerTime = DateFormat.jm(l10n.localeName).format(adjustedNext);
           } else if (nextPrayer == adhan.Prayer.none) {
             final fajr = prayerService.fajr;
             if (fajr != null) {
-              prayerTime = DateFormat.jm().format(fajr);
+              prayerTime = DateFormat.jm(l10n.localeName).format(fajr);
             }
           }
         }
@@ -224,7 +275,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Text(prayerName,
                   style: theme.textTheme.titleMedium
                       ?.copyWith(fontSize: 22, fontWeight: FontWeight.w500)),
-              Text(prayerTime,
+              Text(prayerTime.toWesternArabic,
                   style: const TextStyle(
                       fontSize: 48,
                       fontWeight: FontWeight.bold,
@@ -251,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCard(BuildContext context, String titleAr, String titleEn,
+  Widget _buildCard(BuildContext context, String title, String subtitle,
       dynamic icon, VoidCallback onTap) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -286,11 +337,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   HugeIcon(icon: icon, color: AppTheme.primaryColor, size: 30),
             ),
             const SizedBox(height: 16),
-            Text(titleEn,
+            Text(title,
                 style: theme.textTheme.titleMedium
                     ?.copyWith(fontWeight: FontWeight.bold, fontSize: 16)),
-            Text(titleAr,
-                style: theme.textTheme.bodySmall?.copyWith(fontSize: 12)),
+            // Subtitle removed or used for English if needed, currently using title for main text
+            if (subtitle.isNotEmpty && subtitle != title)
+              Text(subtitle,
+                  style: theme.textTheme.bodySmall?.copyWith(fontSize: 12)),
           ],
         ),
       ),

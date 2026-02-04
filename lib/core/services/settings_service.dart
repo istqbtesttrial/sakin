@@ -35,7 +35,8 @@ class SettingsService {
   }
 
   // Location
-  static String get location => _prefs.getString(_keyLocation) ?? 'تونس، قابس';
+  // Location
+  static String? get location => _prefs.getString(_keyLocation);
   static Future<void> setLocation(String value) async {
     await _prefs.setString(_keyLocation, value);
   }

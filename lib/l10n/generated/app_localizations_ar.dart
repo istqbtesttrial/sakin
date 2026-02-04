@@ -12,6 +12,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get settingsTitle => 'الإعدادات';
 
   @override
+  String get general => 'عام';
+
+  @override
+  String get system => 'النظام';
+
+  @override
+  String get darkMode => 'الوضع الداكن';
+
+  @override
   String get language => 'اللغة';
 
   @override
@@ -46,9 +55,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get english => 'English';
-
-  @override
-  String get french => 'Français';
 
   @override
   String get greeting => 'السلام عليكم،';
@@ -124,4 +130,89 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get prayerTracking => 'تتبع الصلوات';
+
+  @override
+  String get ignoreBatteryOptimization => 'تجاهل تحسين البطارية';
+
+  @override
+  String get batteryOptimized => 'مفعّل - الأذان يعمل بدقة';
+
+  @override
+  String get batteryRestricted => 'غير مفعّل - قد يتأخر الأذان';
+
+  @override
+  String get habitLog => 'سجل الالتزام';
+
+  @override
+  String get edit => 'تعديل';
+
+  @override
+  String get delete => 'حذف';
+
+  @override
+  String get addHabit => 'إضافة عادة';
+
+  @override
+  String get editHabit => 'تعديل العادة';
+
+  @override
+  String get habitName => 'اسم العادة';
+
+  @override
+  String get deleteHabitTitle => 'حذف العادة؟';
+
+  @override
+  String get deleteHabitConfirmation => 'هل أنت متأكد؟';
+
+  @override
+  String get achievementBoard => 'لوحة الإنجاز';
+
+  @override
+  String get smallSteps => 'خطواتك الصغيرة تصنع فرقاً كبيراً';
+
+  @override
+  String get updatingLocation => 'جاري تحديث الموقع...';
+
+  @override
+  String get changeLocation => 'تغيير الموقع';
+
+  @override
+  String get locationChangeDetected =>
+      'تم اكتشاف تغيير كبير في الموقع ولديك تعديلات يدوية محفوظة.\nهل تريد الاحتفاظ بها للموقع الجديد أم إعادة ضبطها؟';
+
+  @override
+  String get keep => 'الاحتفاظ';
+
+  @override
+  String get reset => 'إلغاء التعديلات';
+
+  @override
+  String get locationUpdatedSuccess => 'تم تحديث الموقع والمواقيت بنجاح';
+
+  @override
+  String get errorOccurred => 'حدث خطأ';
+
+  @override
+  String get refreshLocation => 'تحديث الموقع';
+
+  @override
+  String get refreshing => 'جاري التحديث...';
+
+  @override
+  String get mosqueTimeSync => 'مزامنة وقت المسجد';
+
+  @override
+  String get mosqueTimeSyncDesc =>
+      'يمكنك الضغط على أي صلاة لتخصيص وقت الأذان (تقديم أو تأخير) ليتطابق مع أذان المسجد القريب منك.';
+
+  @override
+  String adjustTime(String prayerName) {
+    return 'تعديل وقت $prayerName';
+  }
+
+  @override
+  String get adjustTimeDesc => 'تقديم أو تأخير الوقت بالدقائق';
+
+  @override
+  String get selectLocation => 'اختر الموقع';
 }

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hugeicons/hugeicons.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/theme.dart';
+import '../../core/utils/number_converter.dart';
 
 class TasbihScreen extends StatefulWidget {
   const TasbihScreen({super.key});
@@ -11,189 +14,154 @@ class TasbihScreen extends StatefulWidget {
 
 class _TasbihScreenState extends State<TasbihScreen> {
   int _count = 0;
-  int _round = 0;
-  final int _target = 33; // Round target
+  int _target = 33;
+  int _presetIndex = 0;
+  final _presets = [
+    {'ar': 'سُبْحَانَ اللَّهِ', 'en': 'Subhanallah', 't': 33},
+    {'ar': 'الْحَمْدُ لِلَّهِ', 'en': 'Alhamdulillah', 't': 33},
+    {'ar': 'اللَّهُ أَكْبَرُ', 'en': 'Allahu Akbar', 't': 34},
+  ];
 
-  void _increment() {
-    HapticFeedback.lightImpact(); // Subtle vibration
-    setState(() {
-      _count++;
-      if (_count > _target) {
-        _count = 1;
-        _round++;
-        HapticFeedback.mediumImpact(); // Stronger feedback on cycle completion
-      }
-    });
+  @override
+  void initState() {
+    super.initState();
+    SharedPreferences.getInstance().then((p) => setState(() {
+          _count = p.getInt('tasbih_c') ?? 0;
+          _presetIndex = p.getInt('tasbih_p') ?? 0;
+          // Ensure index is valid
+          if (_presetIndex < 0 || _presetIndex >= _presets.length) {
+            _presetIndex = 0;
+          }
+          _target = _presets[_presetIndex]['t'] as int;
+        }));
   }
 
-  void _reset() {
-    HapticFeedback.selectionClick();
-    setState(() {
-      _count = 0;
-      _round = 0;
-    });
+  void _update(int c) {
+    setState(() => _count = c);
+    SharedPreferences.getInstance().then((p) => p.setInt('tasbih_c', c));
   }
 
   @override
   Widget build(BuildContext context) {
+    final p = _presets[_presetIndex];
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('المسبحة الإلكترونية'),
-        centerTitle: true,
-        backgroundColor: AppTheme.primaryColor,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              // Reset confirmation dialog
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('تصفير المسبحة؟'),
-                  content: const Text('هل تريد إعادة العداد إلى الصفر؟'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('إلغاء'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        _reset();
-                        Navigator.pop(context);
-                      },
-                      child: const Text('نعم، تصفير'),
-                    ),
-                  ],
-                ),
-              );
-            },
-          )
-        ],
-      ),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(title: const Text("المسبحة"), leading: const BackButton()),
       body: Column(
         children: [
-          // Summary Card (Total Rounds)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppTheme.primaryColor,
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(30),
-                bottomRight: Radius.circular(30),
+          SizedBox(
+            height: 100,
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              scrollDirection: Axis.horizontal,
+              itemCount: _presets.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (ctx, i) => GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _presetIndex = i;
+                    _target = _presets[i]['t'] as int;
+                    _count = 0;
+                  });
+                  SharedPreferences.getInstance()
+                      .then((p) => p.setInt('tasbih_p', i));
+                },
+                child: Chip(
+                  label: Text(
+                      "${_presets[i]['ar']} (${_presets[i]['t']})"
+                          .toWesternArabic,
+                      style: const TextStyle(fontFamily: 'Cairo')),
+                  backgroundColor:
+                      _presetIndex == i ? AppTheme.primaryColor : Colors.white,
+                  labelStyle: TextStyle(
+                      color: _presetIndex == i ? Colors.white : Colors.black),
+                  side: BorderSide.none,
+                ),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                  blurRadius: 10,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                const Text(
-                  'عدد الدورات المكتملة',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  '$_round',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
             ),
           ),
-
           Expanded(
-            child: Center(
+            child: Container(
+              margin: const EdgeInsets.all(24),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: const [
+                    BoxShadow(color: Colors.black12, blurRadius: 20)
+                  ]),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Circular Progress Indicator
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      SizedBox(
-                        width: 250,
-                        height: 250,
-                        child: CircularProgressIndicator(
-                          value: _count / _target,
-                          strokeWidth: 15,
-                          backgroundColor: Colors.grey.shade200,
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                            AppTheme.primaryColor,
-                          ),
-                        ),
-                      ),
-
-                      // Main Counter Button
-                      GestureDetector(
-                        onTap: _increment,
-                        child: Container(
-                          width: 200,
-                          height: 200,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withValues(alpha: 0.2),
-                                blurRadius: 15,
-                                spreadRadius: 5,
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '$_count',
-                                style: const TextStyle(
-                                  fontSize: 60,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.primaryColor,
-                                ),
-                              ),
-                              const Text(
-                                'تسبيحة',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
+                  Text(p['ar'] as String,
+                      style: const TextStyle(
+                          fontSize: 32,
+                          fontFamily: 'Amiri',
+                          fontWeight: FontWeight.bold)),
+                  Text(p['en'] as String,
+                      style: const TextStyle(color: Colors.grey)),
                   const SizedBox(height: 40),
-
-                  // Interaction Instructions
-                  const Text(
-                    'اضغط في أي مكان داخل الدائرة للتسبيح',
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
-                    ),
+                  Text("$_count".toWesternArabic,
+                      style: const TextStyle(
+                          fontSize: 80,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.primaryColor)),
+                  Text("of $_target".toWesternArabic,
+                      style: const TextStyle(color: Colors.grey)),
+                  const SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    child: LinearProgressIndicator(
+                        value: _count / _target,
+                        color: AppTheme.primaryColor,
+                        backgroundColor: Colors.grey[100]),
                   ),
                 ],
               ),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 40),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _btn(HugeIcons.strokeRoundedMinusSign,
+                    () => _count > 0 ? _update(_count - 1) : null),
+                const SizedBox(width: 20),
+                _btn(HugeIcons.strokeRoundedPlusSign, () {
+                  if (_count < _target) {
+                    HapticFeedback.lightImpact();
+                    _update(_count + 1);
+                  } else {
+                    HapticFeedback.heavyImpact();
+                    _update(0);
+                  }
+                }, isBig: true),
+                const SizedBox(width: 20),
+                _btn(HugeIcons.strokeRoundedRefresh, () => _update(0)),
+              ],
+            ),
+          )
         ],
+      ),
+    );
+  }
+
+  Widget _btn(dynamic icon, VoidCallback onTap, {bool isBig = false}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(isBig ? 24 : 16),
+        decoration: BoxDecoration(
+            color: isBig ? AppTheme.primaryColor : Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: const [
+              BoxShadow(color: Colors.black12, blurRadius: 10)
+            ]),
+        child: HugeIcon(
+            icon: icon,
+            color: isBig ? Colors.white : AppTheme.primaryColor,
+            size: isBig ? 32 : 24),
       ),
     );
   }

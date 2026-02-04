@@ -11,14 +11,23 @@ class CustomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 1. Determine Theme Mode
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    // 2. Define Dynamic Colors
+    final backgroundColor = theme.cardColor;
+    final unselectedColor = isDark ? Colors.white54 : Colors.grey;
+    final shadowOpacity = isDark ? 0.3 : 0.08;
+
     return Container(
       margin: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
+              color: Colors.black.withValues(alpha: shadowOpacity),
               blurRadius: 10,
               offset: const Offset(0, 5)),
         ],
@@ -28,20 +37,20 @@ class CustomNavBar extends StatelessWidget {
         child: BottomNavigationBar(
           currentIndex: currentIndex,
           onTap: onTap,
-          backgroundColor: Colors.white,
+          backgroundColor: backgroundColor,
           selectedItemColor: AppTheme.primaryColor,
-          unselectedItemColor: Colors.grey,
+          unselectedItemColor: unselectedColor,
           showSelectedLabels: false,
           showUnselectedLabels: false,
           type: BottomNavigationBarType.fixed,
           elevation: 0,
-          items: const [
+          items: [
             BottomNavigationBarItem(
               icon: HugeIcon(
                 icon: HugeIcons.strokeRoundedHome01,
-                color: Colors.grey,
+                color: unselectedColor,
               ),
-              activeIcon: HugeIcon(
+              activeIcon: const HugeIcon(
                 icon: HugeIcons.strokeRoundedHome01,
                 color: AppTheme.primaryColor,
               ),
@@ -50,9 +59,9 @@ class CustomNavBar extends StatelessWidget {
             BottomNavigationBarItem(
               icon: HugeIcon(
                 icon: HugeIcons.strokeRoundedTask01,
-                color: Colors.grey,
+                color: unselectedColor,
               ),
-              activeIcon: HugeIcon(
+              activeIcon: const HugeIcon(
                 icon: HugeIcons.strokeRoundedTask01,
                 color: AppTheme.primaryColor,
               ),
@@ -60,11 +69,11 @@ class CustomNavBar extends StatelessWidget {
             ),
             BottomNavigationBarItem(
               icon: HugeIcon(
-                icon: HugeIcons.strokeRoundedCompass01,
-                color: Colors.grey,
+                icon: HugeIcons.strokeRoundedTime01,
+                color: unselectedColor,
               ),
-              activeIcon: HugeIcon(
-                icon: HugeIcons.strokeRoundedCompass01,
+              activeIcon: const HugeIcon(
+                icon: HugeIcons.strokeRoundedTime01,
                 color: AppTheme.primaryColor,
               ),
               label: 'Prayer',
@@ -72,9 +81,9 @@ class CustomNavBar extends StatelessWidget {
             BottomNavigationBarItem(
               icon: HugeIcon(
                 icon: HugeIcons.strokeRoundedSettings01,
-                color: Colors.grey,
+                color: unselectedColor,
               ),
-              activeIcon: HugeIcon(
+              activeIcon: const HugeIcon(
                 icon: HugeIcons.strokeRoundedSettings01,
                 color: AppTheme.primaryColor,
               ),

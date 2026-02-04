@@ -17,6 +17,7 @@ dependencies:
   google_fonts: ^6.1.0
   flutter_svg: ^2.0.9
   intl: ^0.20.0
+  hijri: ^3.0.0
   timezone: ^0.9.2 # For local notification scheduling
   provider: ^6.1.1
 
@@ -38,6 +39,11 @@ dependencies:
   android_intent_plus: ^6.0.0
   flutter_foreground_task: ^9.2.0
   hugeicons: ^1.1.5
+  flutter_bloc: ^9.1.1
+  equatable: ^2.0.8
+  bloc: ^9.2.0
+  url_launcher: ^6.2.5
+  shared_preferences: ^2.5.4
 
 
 

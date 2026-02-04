@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
-import 'package:permission_handler/permission_handler.dart'; // ضروري للبطارية
+import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/services/settings_service.dart';
 import '../../core/theme.dart';
-import '../../main.dart'; // للوصول لـ Notifiers
+import '../../main.dart';
+import 'package:sakin_app/l10n/generated/app_localizations.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -15,14 +16,13 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen>
     with WidgetsBindingObserver {
-  // حالة البطارية الحقيقية
-  bool _isBatteryOptimizationIgnored = false;
+  bool _isBatteryIgnored = false;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this); // لمراقبة العودة من الإعدادات
-    _checkBatteryStatus(); // فحص الحالة عند البدء
+    WidgetsBinding.instance.addObserver(this); // Monitor user return to app
+    _checkBatteryStatus();
   }
 
   @override
@@ -31,7 +31,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     super.dispose();
   }
 
-  // تحديث الحالة عند العودة للتطبيق (في حال غير المستخدم الإعداد من الخارج)
+  // Update status immediately when returning from system settings
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
@@ -40,122 +40,141 @@ class _SettingsScreenState extends State<SettingsScreen>
   }
 
   Future<void> _checkBatteryStatus() async {
-    // التحقق هل التطبيق في القائمة البيضاء (مسموح له بالعمل)
-    final isIgnored = await Permission.ignoreBatteryOptimizations.isGranted;
+    final status = await Permission.ignoreBatteryOptimizations.isGranted;
     if (mounted) {
-      setState(() {
-        _isBatteryOptimizationIgnored = isIgnored;
-      });
+      setState(() => _isBatteryIgnored = status);
     }
   }
-
-  Future<void> _requestBatteryPermission(bool value) async {
-    if (value) {
-      // طلب الإذن
-      await Permission.ignoreBatteryOptimizations.request();
-    } else {
-      // لا يمكن إلغاء الإذن برمجياً، نوجه المستخدم للإعدادات
-      await openAppSettings();
-    }
-    // إعادة الفحص بعد الإجراء
-    await _checkBatteryStatus();
-  }
-
-  // --- Logic Functions ---
-
-  void _changeLanguage(String code) {
-    SettingsService.setLanguage(code);
-    localeNotifier.value = Locale(code);
-    Navigator.pop(context);
-  }
-
-  void _toggleDarkMode(bool val) {
-    SettingsService.setDarkMode(val);
-    themeNotifier.value = val ? ThemeMode.dark : ThemeMode.light;
-  }
-
-  // --- UI Build ---
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(
-          "الإعدادات",
-          style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : Colors.black),
-        ),
+        title: Text(AppLocalizations.of(context)!.settingsTitle,
+            style: const TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new,
-              size: 20, color: isDark ? Colors.white : Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // 1. قسم عام (اللغة والثيم) - تم الإبقاء عليه
-            _sectionHeader("عام"),
-            _sectionBox([
-              _tile(HugeIcons.strokeRoundedGlobal, "اللغة",
-                  trailing: _langName(SettingsService.language),
+            // 1. General Section
+            _sectionHeader(AppLocalizations.of(context)!.general),
+            _buildBox([
+              _tile(HugeIcons.strokeRoundedGlobal,
+                  AppLocalizations.of(context)!.language,
+                  trailing: _langName(context, SettingsService.language),
                   onTap: _showLangSheet),
               _divider(),
-              ValueListenableBuilder<ThemeMode>(
-                valueListenable: themeNotifier,
-                builder: (_, mode, __) {
-                  return _tile(HugeIcons.strokeRoundedMoon02, "الوضع الداكن",
-                      trailingWidget: Switch.adaptive(
-                        value: mode == ThemeMode.dark,
-                        activeTrackColor: AppTheme.primaryColor,
-                        onChanged: _toggleDarkMode,
-                      ));
-                },
-              ),
-            ]),
-
-            const SizedBox(height: 24),
-
-            // ⚠️ تم حذف قسم "إعدادات الصلاة" (الموقع وتعديل الوقت) بالكامل كما طلبت ✅
-
-            // 2. قسم النظام (الإشعارات والبطارية)
-            _sectionHeader("النظام"),
-            _sectionBox([
-              _tile(HugeIcons.strokeRoundedNotification01, "إشعارات الصلاة",
-                  trailingWidget:
-                      Switch.adaptive(value: true, onChanged: (v) {})),
-              _divider(),
-              // زر البطارية الذكي الجديد 🔋
-              _tile(HugeIcons.strokeRoundedBatteryCharging01,
-                  "تجاهل تحسين البطارية",
-                  subtitle: "لضمان دقة الأذان في الخلفية",
+              _tile(HugeIcons.strokeRoundedMoon02,
+                  AppLocalizations.of(context)!.darkMode,
                   trailingWidget: Switch.adaptive(
-                    value: _isBatteryOptimizationIgnored, // يعكس الواقع
+                    value: isDark,
                     activeTrackColor: AppTheme.primaryColor,
-                    onChanged: (val) => _requestBatteryPermission(val),
+                    onChanged: (val) {
+                      SettingsService.setDarkMode(val);
+                      themeNotifier.value =
+                          val ? ThemeMode.dark : ThemeMode.light;
+                    },
                   )),
             ]),
 
+            const SizedBox(height: 25),
+
+            // ⚠️ "Prayer Settings" completely removed for stability ✅
+
+            // 2. System Section
+            _sectionHeader(AppLocalizations.of(context)!.system),
+            _buildBox([
+              _tile(HugeIcons.strokeRoundedNotification01,
+                  AppLocalizations.of(context)!.notifications,
+                  trailingWidget:
+                      Switch.adaptive(value: true, onChanged: (v) {})),
+              _divider(),
+              // Smart Battery Button 🔋
+              _tile(
+                HugeIcons.strokeRoundedBatteryCharging01,
+                AppLocalizations.of(context)!.ignoreBatteryOptimization,
+                subtitle: _isBatteryIgnored
+                    ? AppLocalizations.of(context)!.batteryOptimized
+                    : AppLocalizations.of(context)!.batteryRestricted,
+                trailingWidget: Switch.adaptive(
+                  value: _isBatteryIgnored,
+                  activeTrackColor: AppTheme.primaryColor,
+                  onChanged: (val) async {
+                    if (val) {
+                      await Permission.ignoreBatteryOptimizations.request();
+                    } else {
+                      await openAppSettings();
+                    }
+                    _checkBatteryStatus();
+                  },
+                ),
+              ),
+            ]),
+
             const SizedBox(height: 40),
-            _buildFooter(),
+            _footer(),
           ],
         ),
       ),
     );
   }
 
-  // --- Helper Widgets ---
+  // --- UI Helpers ---
+  Widget _sectionHeader(String t) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+        child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Text(t,
+                style: const TextStyle(
+                    color: Colors.grey, fontWeight: FontWeight.bold))),
+      );
+
+  Widget _buildBox(List<Widget> c) => Container(
+        decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03), blurRadius: 10)
+            ]),
+        child: Column(children: c),
+      );
+
+  Widget _tile(dynamic i, String t,
+      {String? subtitle,
+      String? trailing,
+      Widget? trailingWidget,
+      VoidCallback? onTap}) {
+    return ListTile(
+      leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10)),
+          child: HugeIcon(icon: i, color: AppTheme.primaryColor, size: 22)),
+      title: Text(t,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+      subtitle: subtitle != null
+          ? Text(subtitle,
+              style: const TextStyle(fontSize: 11, color: Colors.grey))
+          : null,
+      trailing: trailingWidget ??
+          (trailing != null
+              ? Text(trailing, style: const TextStyle(color: Colors.grey))
+              : null),
+      onTap: onTap,
+    );
+  }
+
+  Widget _divider() => const Divider(height: 1, indent: 60);
 
   void _showLangSheet() {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
         context: context,
         backgroundColor: Theme.of(context).cardColor,
@@ -163,13 +182,12 @@ class _SettingsScreenState extends State<SettingsScreen>
               mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: 20),
-                const Text("اختر اللغة",
-                    style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                Text(l10n.changeLanguage,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 18)),
                 const SizedBox(height: 10),
-                _langTile("العربية", 'ar'),
-                _langTile("English", 'en'),
-                _langTile("Français", 'fr'),
+                _langTile(l10n.arabic, 'ar'),
+                _langTile(l10n.english, 'en'),
                 const SizedBox(height: 20),
               ],
             ));
@@ -182,88 +200,38 @@ class _SettingsScreenState extends State<SettingsScreen>
       trailing: isSelected
           ? const Icon(Icons.check, color: AppTheme.primaryColor)
           : null,
-      onTap: () => _changeLanguage(code),
+      onTap: () {
+        SettingsService.setLanguage(code);
+        localeNotifier.value = Locale(code);
+        Navigator.pop(context);
+      },
     );
   }
 
-  Widget _sectionHeader(String title) => Padding(
-      padding: const EdgeInsets.only(bottom: 10, right: 10, left: 10),
-      child: Align(
-          alignment: AlignmentDirectional.centerStart,
-          child: Text(title,
-              style: const TextStyle(
-                  color: Colors.grey, fontWeight: FontWeight.bold))));
-
-  Widget _sectionBox(List<Widget> children) => Container(
-      decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)
-          ]),
-      child: Column(children: children));
-
-  Widget _divider() =>
-      const Divider(height: 1, indent: 60, color: Colors.black12);
-
-  Widget _tile(dynamic icon, String title,
-      {String? subtitle,
-      String? trailing,
-      Widget? trailingWidget,
-      VoidCallback? onTap}) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return ListTile(
-      leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white10
-                  : AppTheme.primaryColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10)),
-          child: HugeIcon(
-              icon: icon,
-              color: isDark ? Colors.white : AppTheme.primaryColor,
-              size: 24)),
-      title: Text(title,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-      subtitle: subtitle != null
-          ? Text(subtitle,
-              style: const TextStyle(color: Colors.grey, fontSize: 11))
-          : null,
-      trailing: trailingWidget ??
-          (trailing != null
-              ? Row(mainAxisSize: MainAxisSize.min, children: [
-                  Text(trailing,
-                      style: const TextStyle(color: Colors.grey, fontSize: 13)),
-                  const SizedBox(width: 5),
-                  const Icon(Icons.arrow_forward_ios,
-                      size: 14, color: Colors.grey)
-                ])
-              : null),
-      onTap: onTap,
-    );
+  String _langName(BuildContext context, String c) {
+    final l10n = AppLocalizations.of(context)!;
+    return c == 'ar' ? l10n.arabic : l10n.english;
   }
 
-  Widget _buildFooter() => Column(children: [
-        Text("Sakin v1.0.0", style: TextStyle(color: Colors.grey.shade400)),
-        const SizedBox(height: 15),
+  Widget _footer() => Column(children: [
+        const Text("Sakin v1.0.0", style: TextStyle(color: Colors.grey)),
+        const SizedBox(height: 10),
         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          _socialBtn(HugeIcons.strokeRoundedGithub,
-              "https://github.com/Xoner1/-sakin-app"),
+          InkWell(
+              onTap: () async => await launchUrl(
+                  Uri.parse("https://github.com/Xoner1/-sakin-app")),
+              child: const HugeIcon(
+                  icon: HugeIcons.strokeRoundedGithub,
+                  color: Colors.grey,
+                  size: 24)),
           const SizedBox(width: 20),
-          _socialBtn(
-              HugeIcons.strokeRoundedMail01, "mailto:fakhridfarhat@gmail.com"),
-        ])
+          InkWell(
+              onTap: () async =>
+                  await launchUrl(Uri.parse("mailto:fakhridfarhat@gmail.com")),
+              child: const HugeIcon(
+                  icon: HugeIcons.strokeRoundedMail01,
+                  color: Colors.grey,
+                  size: 24)),
+        ]),
       ]);
-
-  Widget _socialBtn(dynamic icon, String url) {
-    return InkWell(
-      onTap: () async => await launchUrl(Uri.parse(url)),
-      child: HugeIcon(icon: icon, color: Colors.grey, size: 24),
-    );
-  }
-
-  String _langName(String c) =>
-      c == 'ar' ? 'العربية' : (c == 'fr' ? 'Français' : 'English');
 }

@@ -13,6 +13,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'presentation/screens/settings_screen.dart';
 import 'presentation/screens/adhan_alarm_page.dart';
+import 'presentation/screens/splash_screen.dart'; // Import SplashScreen
 import 'services/permission_service.dart';
 
 import 'core/theme.dart';
@@ -48,68 +49,111 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
 final ValueNotifier<Locale> localeNotifier = ValueNotifier(const Locale('ar'));
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  runApp(const AppBootstrap());
+}
 
-  // 0. Initialize Settings First
-  await SettingsService.init();
-  themeNotifier.value =
-      SettingsService.isDarkMode ? ThemeMode.dark : ThemeMode.light;
-  localeNotifier.value = Locale(SettingsService.language);
+class AppBootstrap extends StatefulWidget {
+  const AppBootstrap({super.key});
 
-  // Initialize Habit Service
-  await HabitService.init();
+  @override
+  State<AppBootstrap> createState() => _AppBootstrapState();
+}
 
-  // 1. Initialize date formatting locale
-  await initializeDateFormatting('ar', null);
-  tz.initializeTimeZones();
+class _AppBootstrapState extends State<AppBootstrap> {
+  bool _isInitialized = false;
+  late final HiveDatabase _hiveDb;
+  late final MisbahaRepository _misbahaRepository;
+  late final LocationService _locationService;
 
-  // 1. Initialize Database (Ensure Hive is initialized first)
-  final hiveDb = HiveDatabase();
-  await hiveDb.init();
-
-  // Initialize Misbaha Repository
-  final misbahaRepository = MisbahaRepository();
-  await misbahaRepository.init();
-
-  // 2. Request necessary permissions (Only once)
-  var settingsBox = await Hive.openBox('settings');
-  bool permissionsRequested =
-      settingsBox.get('permissions_requested', defaultValue: false);
-
-  if (!permissionsRequested) {
-    debugPrint('Requesting permissions for the first time...');
-
-    final permissionService = PermissionService();
-    await permissionService.requestNotificationPermissions();
-    await Permission.location.request();
-    await settingsBox.put('permissions_requested', true);
-  } else {
-    debugPrint('Permissions already requested previously. Skipping.');
+  @override
+  void initState() {
+    super.initState();
+    _initServices();
   }
 
-  // 3. Initialize Services
-  await NotificationService.init();
-  if (Platform.isAndroid) {
-    await AndroidAlarmManager.initialize();
+  Future<void> _initServices() async {
+    // 1. Initialize Critical Base Services (Sequential)
+    await SettingsService.init();
+
+    // Update global notifiers immediately after settings load
+    themeNotifier.value =
+        SettingsService.isDarkMode ? ThemeMode.dark : ThemeMode.light;
+    localeNotifier.value = Locale(SettingsService.language);
+
+    await HabitService.init();
+
+    // 2. Initialize Database & Repository (Sequential)
+    _hiveDb = HiveDatabase();
+    await _hiveDb.init();
+
+    _misbahaRepository = MisbahaRepository();
+    await _misbahaRepository.init();
+
+    // 3. Initialize Independent Services (Parallel)
+    await Future.wait([
+      initializeDateFormatting('ar', null),
+      NotificationService.init(),
+      if (Platform.isAndroid)
+        AndroidAlarmManager.initialize()
+      else
+        Future.value(true),
+      _initPermissions(),
+    ]);
+
+    tz.initializeTimeZones(); // Synchronous
+
+    // 4. Initialize Location Service
+    _locationService = LocationService();
+    await _locationService.init();
+
+    // 5. Setup callback
+    NotificationService.onAdhkarTap = (payload) {
+      navigatorKey.currentState?.push(
+        MaterialPageRoute(builder: (_) => const AdhkarScreen()),
+      );
+    };
+
+    if (mounted) {
+      setState(() {
+        _isInitialized = true;
+      });
+    }
   }
 
-  // 5. Initialize Location Service
-  final locationService = LocationService();
-  await locationService.init();
+  Future<void> _initPermissions() async {
+    var settingsBox = await Hive.openBox('settings');
+    bool permissionsRequested =
+        settingsBox.get('permissions_requested', defaultValue: false);
 
-  // 7. Setup callback to open Adhkar screen on notification tap
-  NotificationService.onAdhkarTap = (payload) {
-    navigatorKey.currentState?.push(
-      MaterialPageRoute(builder: (_) => const AdhkarScreen()),
+    if (!permissionsRequested) {
+      debugPrint('Requesting permissions for the first time...');
+
+      final permissionService = PermissionService();
+      await permissionService.requestNotificationPermissions();
+      await Permission.location.request();
+      await settingsBox.put('permissions_requested', true);
+    } else {
+      debugPrint('Permissions already requested previously. Skipping.');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_isInitialized) {
+      return const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: SplashScreen(),
+      );
+    }
+
+    return SakinApp(
+      hiveDb: _hiveDb,
+      locationService: _locationService,
+      misbahaRepository: _misbahaRepository,
     );
-  };
-
-  runApp(SakinApp(
-    hiveDb: hiveDb,
-    locationService: locationService,
-    misbahaRepository: misbahaRepository,
-  ));
+  }
 }
 
 class SakinApp extends StatelessWidget {
@@ -152,7 +196,6 @@ class SakinApp extends StatelessWidget {
                 supportedLocales: const [
                   Locale('ar'),
                   Locale('en'),
-                  Locale('fr'),
                 ],
                 localizationsDelegates: const [
                   AppLocalizations.delegate,

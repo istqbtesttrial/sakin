@@ -172,6 +172,29 @@ class NotificationService {
     );
   }
 
+  // Schedule notifications for the entire week
+  static Future<void> scheduleForWeek(
+      Map<DateTime, Map<String, DateTime>> schedule) async {
+    // Basic ID generation: DayOfYear * 10 + PrayerIndex
+    // This allows replacing existing alarms for the same slot
+    schedule.forEach((date, prayers) {
+      int prayerIndex = 0;
+      prayers.forEach((name, time) {
+        // Generate a unique ID for this prayer slot
+        // Using distinct IDs ensures we don't conflict with other alarms
+        // Assuming max 5 prayers per day.
+        // DayOfYear calculation (simplistic):
+        int dayOfYear = int.parse(intl.DateFormat("D").format(date));
+        int id = 10000 + (dayOfYear * 10) + prayerIndex;
+
+        if (time.isAfter(DateTime.now())) {
+          scheduleAdhan(id, name, time);
+        }
+        prayerIndex++;
+      });
+    });
+  }
+
   // Schedule Adhan as an alarm using AndroidAlarmManager
   static Future<void> scheduleAdhan(
       int id, String prayerName, DateTime prayerTime) async {
@@ -391,7 +414,7 @@ Future<void> _stickyNotificationCallback(
 
     final String timeString = intl.DateFormat.jm('ar').format(nextTime);
 
-    // Format remaining: "1 ساعة و 30 دقيقة"
+    // Format remaining: "1 hour and 30 minutes"
     String remainingString = "";
     final int hours = diff.inHours;
     final int minutes = diff.inMinutes.remainder(60);

@@ -10,12 +10,12 @@ class HabitService {
     _prefs = await SharedPreferences.getInstance();
   }
 
-  // --- إدارة العادات ---
+  // --- Habits Management ---
 
   static List<Map<String, dynamic>> loadHabits() {
     final String? jsonString = _prefs.getString(_keyHabits);
     if (jsonString == null) {
-      // عادات افتراضية للبداية
+      // Default habits for starters
       return [
         {
           'title': 'صلاة الفجر',
@@ -33,9 +33,9 @@ class HabitService {
     _updateTodayHeatmap(habits);
   }
 
-  // --- إدارة الخريطة الحرارية (Heatmap) ---
+  // --- Heatmap Management ---
 
-  // يحسب نسبة الإنجاز لليوم ويحفظها في التاريخ الحالي
+  // Calculates today's progress percentage and saves it for the current date
   static Future<void> _updateTodayHeatmap(
       List<Map<String, dynamic>> habits) async {
     if (habits.isEmpty) return;
@@ -43,7 +43,7 @@ class HabitService {
     int completedCount = habits.where((h) => h['completed'] == true).length;
     double progress = completedCount / habits.length;
 
-    // حفظ النسبة بتاريخ اليوم (YYYY-MM-DD)
+    // Save percentage with today's date (YYYY-MM-DD)
     String todayKey = DateTime.now().toIso8601String().split('T')[0];
     Map<String, double> history = loadHeatmap();
     history[todayKey] = progress;
@@ -55,7 +55,7 @@ class HabitService {
     final String? jsonString = _prefs.getString(_keyHeatmap);
     if (jsonString == null) return {};
     Map<String, dynamic> decoded = jsonDecode(jsonString);
-    // تحويل القيم إلى double لضمان السلامة
+    // Convert values to double for safety
     return decoded
         .map((key, value) => MapEntry(key, (value as num).toDouble()));
   }

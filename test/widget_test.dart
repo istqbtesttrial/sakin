@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sakin_app/data/hive_database.dart';
 import 'package:sakin_app/services/location_service.dart';
+import 'package:sakin_app/data/repositories/misbaha_repository.dart';
 import 'package:sakin_app/main.dart';
 
 void main() {
@@ -14,6 +15,7 @@ void main() {
     await tester.pumpWidget(SakinApp(
       hiveDb: hiveDb,
       locationService: locationService,
+      misbahaRepository: MisbahaRepository(),
     ));
 
     // Verify the app builds without crashing

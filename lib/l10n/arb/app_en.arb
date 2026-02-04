@@ -1,6 +1,9 @@
 {
     "@@locale": "en",
     "settingsTitle": "Settings",
+    "general": "General",
+    "system": "System",
+    "darkMode": "Dark Mode",
     "language": "Language",
     "appVersion": "App Info",
     "version": "Version",
@@ -13,8 +16,7 @@
     "changeLanguage": "Change Language",
     "arabic": "Arabic",
     "english": "English",
-    "french": "French",
-    "greeting": "Peace be upon you,",
+    "greeting": "السلام عليكم،",
     "encouragement": "Keep up the good work!",
     "nextPrayer": "Next Prayer",
     "timeLeft": "Remaining",
@@ -38,5 +40,40 @@
     "and": "and",
     "dailyTracking": "Daily Prayer Tracking",
     "monthlyStats": "Monthly Statistics",
-    "prayerTracking": "Prayer Tracking"
+    "prayerTracking": "Prayer Tracking",
+    "ignoreBatteryOptimization": "Ignore Battery Optimization",
+    "batteryOptimized": "Enabled - Adhan works accurately",
+    "batteryRestricted": "Disabled - Adhan might be delayed",
+    "habitLog": "Habit Log",
+    "edit": "Edit",
+    "delete": "Delete",
+    "addHabit": "Add Habit",
+    "editHabit": "Edit Habit",
+    "habitName": "Habit Name",
+    "deleteHabitTitle": "Delete Habit?",
+    "deleteHabitConfirmation": "Are you sure?",
+    "achievementBoard": "Achievement Board",
+    "smallSteps": "Small steps make a big difference",
+    "updatingLocation": "Updating location...",
+    "changeLocation": "Change Location",
+    "locationChangeDetected": "Significant location change detected with manual adjustments saved.\nDo you want to keep them for the new location or reset?",
+    "keep": "Keep",
+    "reset": "Reset",
+    "locationUpdatedSuccess": "Location and times updated successfully",
+    "errorOccurred": "Error occurred",
+    "refreshLocation": "Refresh Location",
+    "refreshing": "Refreshing...",
+    "mosqueTimeSync": "Mosque Time Sync",
+    "mosqueTimeSyncDesc": "You can tap any prayer to adjust the Adhan time (forward or backward) to match your local mosque.",
+    "adjustTime": "Adjust {prayerName} Time",
+    "@adjustTime": {
+        "placeholders": {
+            "prayerName": {
+                "type": "String",
+                "example": "Fajr"
+            }
+        }
+    },
+    "adjustTimeDesc": "Adjust time by minutes",
+    "selectLocation": "Select Location"
 }

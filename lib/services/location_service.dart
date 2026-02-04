@@ -96,6 +96,40 @@ class LocationService with ChangeNotifier {
     }
   }
 
+  // Set location manually from address (City, Country)
+  Future<void> setManualLocation(String address) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      List<Location> locations = await locationFromAddress(address);
+      if (locations.isNotEmpty) {
+        Location loc = locations.first;
+        _currentLocation = LocationInfo(
+          latitude: loc.latitude,
+          longitude: loc.longitude,
+          address: address, // Or fetch formatted address if desired
+          mode: LocationMode.manual,
+        );
+
+        await _saveLocationToCache(_currentLocation!);
+        await PrayerAlarmScheduler.scheduleSevenDays();
+
+        _isLoading = false;
+        notifyListeners();
+      } else {
+        _errorMessage = 'Address not found';
+        _isLoading = false;
+        notifyListeners();
+      }
+    } catch (e) {
+      _errorMessage = 'Error setting location: $e';
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   // Save location to Hive
   Future<void> _saveLocationToCache(LocationInfo location) async {
     final box = await Hive.openBox('settings');

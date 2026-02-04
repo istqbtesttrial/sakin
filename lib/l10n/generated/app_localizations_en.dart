@@ -12,6 +12,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsTitle => 'Settings';
 
   @override
+  String get general => 'General';
+
+  @override
+  String get system => 'System';
+
+  @override
+  String get darkMode => 'Dark Mode';
+
+  @override
   String get language => 'Language';
 
   @override
@@ -48,10 +57,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get english => 'English';
 
   @override
-  String get french => 'French';
-
-  @override
-  String get greeting => 'Peace be upon you,';
+  String get greeting => 'السلام عليكم،';
 
   @override
   String get encouragement => 'Keep up the good work!';
@@ -124,4 +130,90 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get prayerTracking => 'Prayer Tracking';
+
+  @override
+  String get ignoreBatteryOptimization => 'Ignore Battery Optimization';
+
+  @override
+  String get batteryOptimized => 'Enabled - Adhan works accurately';
+
+  @override
+  String get batteryRestricted => 'Disabled - Adhan might be delayed';
+
+  @override
+  String get habitLog => 'Habit Log';
+
+  @override
+  String get edit => 'Edit';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get addHabit => 'Add Habit';
+
+  @override
+  String get editHabit => 'Edit Habit';
+
+  @override
+  String get habitName => 'Habit Name';
+
+  @override
+  String get deleteHabitTitle => 'Delete Habit?';
+
+  @override
+  String get deleteHabitConfirmation => 'Are you sure?';
+
+  @override
+  String get achievementBoard => 'Achievement Board';
+
+  @override
+  String get smallSteps => 'Small steps make a big difference';
+
+  @override
+  String get updatingLocation => 'Updating location...';
+
+  @override
+  String get changeLocation => 'Change Location';
+
+  @override
+  String get locationChangeDetected =>
+      'Significant location change detected with manual adjustments saved.\nDo you want to keep them for the new location or reset?';
+
+  @override
+  String get keep => 'Keep';
+
+  @override
+  String get reset => 'Reset';
+
+  @override
+  String get locationUpdatedSuccess =>
+      'Location and times updated successfully';
+
+  @override
+  String get errorOccurred => 'Error occurred';
+
+  @override
+  String get refreshLocation => 'Refresh Location';
+
+  @override
+  String get refreshing => 'Refreshing...';
+
+  @override
+  String get mosqueTimeSync => 'Mosque Time Sync';
+
+  @override
+  String get mosqueTimeSyncDesc =>
+      'You can tap any prayer to adjust the Adhan time (forward or backward) to match your local mosque.';
+
+  @override
+  String adjustTime(String prayerName) {
+    return 'Adjust $prayerName Time';
+  }
+
+  @override
+  String get adjustTimeDesc => 'Adjust time by minutes';
+
+  @override
+  String get selectLocation => 'Select Location';
 }
