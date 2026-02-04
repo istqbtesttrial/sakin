@@ -43,10 +43,20 @@ We believe spiritual apps should be distractions-free. Sakin is built on three c
 
 ## 📸 Screenshots | لقطات الشاشة
 
+### ☀️ Light Mode | الوضع النهاري
 <p align="center">
-  <img src="screenshots/Screenshot_2026-02-04-19-05-44-598_com.example.sakin_app.jpg" width="200" alt="Home Screen" style="border-radius: 10px; margin: 10px;" />
-  <img src="screenshots/Screenshot_2026-02-04-19-06-04-860_com.example.sakin_app.jpg" width="200" alt="Settings Screen" style="border-radius: 10px; margin: 10px;" />
-  <img src="screenshots/Screenshot_2026-02-04-19-08-29-003_com.example.sakin_app.jpg" width="200" alt="Tasbih" style="border-radius: 10px; margin: 10px;" />
+  <img src="screenshots/Screenshot_2026-02-04-19-05-44-598_com.example.sakin_app.jpg" width="200" alt="Home Light" style="border-radius: 10px; margin: 5px;" />
+  <img src="screenshots/Screenshot_2026-02-04-19-05-57-660_com.example.sakin_app.jpg" width="200" alt="Detail Light" style="border-radius: 10px; margin: 5px;" />
+  <img src="screenshots/Screenshot_2026-02-04-19-06-04-860_com.example.sakin_app.jpg" width="200" alt="Settings Light" style="border-radius: 10px; margin: 5px;" />
+  <img src="screenshots/Screenshot_2026-02-04-19-06-07-844_com.example.sakin_app.jpg" width="200" alt="Tasbih Light" style="border-radius: 10px; margin: 5px;" />
+</p>
+
+### 🌙 Dark Mode | الوضع الليلي
+<p align="center">
+  <img src="screenshots/Screenshot_2026-02-04-19-08-17-272_com.example.sakin_app.jpg" width="200" alt="Home Dark" style="border-radius: 10px; margin: 5px;" />
+  <img src="screenshots/Screenshot_2026-02-04-19-08-21-498_com.example.sakin_app.jpg" width="200" alt="Detail Dark" style="border-radius: 10px; margin: 5px;" />
+  <img src="screenshots/Screenshot_2026-02-04-19-08-26-276_com.example.sakin_app.jpg" width="200" alt="Settings Dark" style="border-radius: 10px; margin: 5px;" />
+  <img src="screenshots/Screenshot_2026-02-04-19-08-29-003_com.example.sakin_app.jpg" width="200" alt="Tasbih Dark" style="border-radius: 10px; margin: 5px;" />
 </p>
 
 ---
